@@ -3,7 +3,7 @@ import json
 import argparse
 
 from PIL import Image
-from alt_baselines import WarpFrame, make_atari
+from alt_baselines import WarpFrame, get_car_env
 from torchvision import transforms
 from tqdm import tqdm
 import numpy as np
@@ -12,10 +12,13 @@ import numpy as np
 def main():
     parser = argparse.ArgumentParser(description='Generate Pong trajectories.')
     parser.add_argument('--datadir', default='data')
-    parser.add_argument('--num_steps', default=100, type=int)
-    parser.add_argument('--num_trajectories', default=10, type=int)
+    parser.add_argument('--num_steps', default=1000, type=int)
+    parser.add_argument('--num_trajectories', default=100, type=int)
     parser.add_argument('--seed', default=4242, type=int)
     args = parser.parse_args()
+
+    # env_name = "PongNoFrameskip-v4"
+    env_name = "CarRacing-v0"
 
     num_trajectories = args.num_trajectories
     datadir = args.datadir
@@ -23,10 +26,10 @@ def main():
     np.random.seed(args.seed)
 
     def make_env(env_id, num_steps):
-        env = make_atari(env_id, max_episode_steps=num_steps)
+        env = get_car_env(env_id=env_id, max_episode_steps=num_steps)
         return WarpFrame(env, 80, 80, grayscale=False)
 
-    env = make_env('PongNoFrameskip-v4', num_steps)
+    env = make_env(env_id=env_name, num_steps=num_steps)
     obs = env.reset()
     print("Data will be saved to {}".format(datadir))
     with tqdm(total=num_trajectories * num_steps) as pbar:
