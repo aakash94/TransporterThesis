@@ -3,8 +3,7 @@ import json
 import argparse
 
 from PIL import Image
-import baselines
-from baselines.common.atari_wrappers import make_atari, wrap_deepmind, WarpFrame
+from alt_baselines import WarpFrame, make_atari
 from torchvision import transforms
 from tqdm import tqdm
 import numpy as np
