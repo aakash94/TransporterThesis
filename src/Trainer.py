@@ -1,12 +1,12 @@
 import os
 import gym
-from stable_baselines3 import A2C, DQN
+from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 
 
 class Trainer():
 
-    def __init__(self, atari_env=False, a2c_model=False, seed=42):
+    def __init__(self, atari_env=False, ppo_model=False, seed=42):
 
         # logs_root = os.path.join(".", "logs", "wrapped")
         logs_root = os.path.join(".", "logs", "baseline")
@@ -19,16 +19,27 @@ class Trainer():
         self.env = Monitor(gym.make(env_name))
         logs_root = os.path.join(logs_root, env_name)
 
-        if a2c_model:
-            print("A2C Model")
-            logs_root = os.path.join(logs_root, "A2C", "")
+        if ppo_model:
+            print("PPO Model")
+            logs_root = os.path.join(logs_root, "PPO", "")
 
-            self.model = A2C(
+            self.model = PPO(
                 'CnnPolicy',
                 self.env,
                 tensorboard_log=logs_root,
                 # verbose=1,
                 seed=seed)
+
+        # elif a2c_model:
+        #     print("A2C Model")
+        #     logs_root = os.path.join(logs_root, "A2C", "")
+        #
+        #     self.model = A2C(
+        #         'CnnPolicy',
+        #         self.env,
+        #         tensorboard_log=logs_root,
+        #         # verbose=1,
+        #         seed=seed)
         else:
             print("DQN Model")
             logs_root = os.path.join(logs_root, "DQN", "")
