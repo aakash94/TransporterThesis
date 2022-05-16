@@ -3,10 +3,14 @@ import gym
 from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 
+PPO_str = "PPO"
+A2C_str = "A2C"
+DQN_str = "DQN"
+
 
 class Trainer():
 
-    def __init__(self, atari_env=False, ppo_model=False, seed=42):
+    def __init__(self, atari_env=False, model_str=PPO_str, seed=42, verbose=0):
 
         # logs_root = os.path.join(".", "logs", "wrapped")
         logs_root = os.path.join(".", "logs", "baseline")
@@ -19,37 +23,34 @@ class Trainer():
         self.env = Monitor(gym.make(env_name))
         logs_root = os.path.join(logs_root, env_name)
 
-        if ppo_model:
-            print("PPO Model")
-            logs_root = os.path.join(logs_root, "PPO", "")
+        print("Model ", model_str)
+        logs_root = os.path.join(logs_root, model_str, "")
 
+        if model_str == PPO_str:
             self.model = PPO(
                 'CnnPolicy',
                 self.env,
                 tensorboard_log=logs_root,
-                # verbose=1,
+                verbose=verbose,
                 seed=seed)
 
-        # elif a2c_model:
-        #     print("A2C Model")
-        #     logs_root = os.path.join(logs_root, "A2C", "")
-        #
-        #     self.model = A2C(
-        #         'CnnPolicy',
-        #         self.env,
-        #         tensorboard_log=logs_root,
-        #         # verbose=1,
-        #         seed=seed)
-        else:
-            print("DQN Model")
-            logs_root = os.path.join(logs_root, "DQN", "")
+        elif model_str == A2C_str:
+            self.model = A2C(
+                'CnnPolicy',
+                self.env,
+                tensorboard_log=logs_root,
+                verbose=verbose,
+                seed=seed)
 
+        elif model_str == DQN_str:
             self.model = DQN(
                 'CnnPolicy',
                 self.env,
                 tensorboard_log=logs_root,
-                # verbose=1,
+                verbose=verbose,
                 seed=seed)
+        else:
+            print("Invalid Model")
 
     def train(self, total_timesteps=1000000):
         print("Training")
@@ -66,7 +67,7 @@ class Trainer():
 
 
 def main():
-    t = Trainer(a2c_model=True)
+    t = Trainer(model_str=PPO_str)
     t.train(total_timesteps=1000000)
     t.demonstrate()
 
