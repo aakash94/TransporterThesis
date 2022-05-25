@@ -2,7 +2,6 @@ import os
 import gym
 from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.monitor import Monitor
-from supersuit import color_reduction_v0, frame_stack_v1
 
 PPO_str = "PPO"
 A2C_str = "A2C"
@@ -14,7 +13,7 @@ class Trainer():
     def __init__(self, atari_env=False, model_str=PPO_str, seed=42, verbose=0):
 
         frame_stack_count = 5
-        experiment_folder = "ss_fs"+str(frame_stack_count)+""
+        experiment_folder = "fs"+str(frame_stack_count)+""
         logs_root = os.path.join(".", "logs", experiment_folder)
         # logs_root = os.path.join(".", "logs", "baseline")
         if atari_env:
@@ -24,8 +23,8 @@ class Trainer():
 
         print("Env : ", env_name)
         env = gym.make(env_name)
-        env = frame_stack_v1(env, stack_size=frame_stack_count)
-        self.env = Monitor(env)
+        env = Monitor(env)
+        self.env = env
         logs_root = os.path.join(logs_root, env_name)
 
         print("Model ", model_str)
@@ -84,8 +83,10 @@ def main():
 
     # t.demonstrate()
     # t1.demonstrate()
-    t2.demonstrate()
+    # t2.demonstrate()
 
 
 if __name__ == "__main__":
     main()
+    # TODO: * multiple frames
+    # TODO: Wrappers
