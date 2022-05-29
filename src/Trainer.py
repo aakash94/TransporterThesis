@@ -3,6 +3,8 @@ import gym
 from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 
+from FrameStackWrapper import FrameStackWrapper
+
 PPO_str = "PPO"
 A2C_str = "A2C"
 DQN_str = "DQN"
@@ -13,17 +15,18 @@ class Trainer():
     def __init__(self, atari_env=False, model_str=PPO_str, seed=42, verbose=0):
 
         frame_stack_count = 5
-        experiment_folder = "fs"+str(frame_stack_count)+""
+        experiment_folder = "fsw" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         # logs_root = os.path.join(".", "logs", "baseline")
         if atari_env:
             env_name = "ALE/Enduro-v5"
         else:
-            env_name = "CarRacing-v0"
+            env_name = "CarRacing-v1"
 
         print("Env : ", env_name)
         env = gym.make(env_name)
         env = Monitor(env)
+        env = FrameStackWrapper(env, frame_stack_count=frame_stack_count)
         self.env = env
         logs_root = os.path.join(logs_root, env_name)
 
@@ -72,14 +75,17 @@ class Trainer():
 
 
 def main():
-    t = Trainer(model_str=PPO_str, atari_env=True)
-    t.train(total_timesteps=5000000)
+    atari_env = False
+    total_timesteps = 5000000
 
-    t1 = Trainer(model_str=A2C_str, atari_env=True)
-    t1.train(total_timesteps=5000000)
+    t = Trainer(model_str=PPO_str, atari_env=atari_env)
+    t.train(total_timesteps=total_timesteps)
 
-    t2 = Trainer(model_str=DQN_str, atari_env=True)
-    t2.train(total_timesteps=5000000)
+    t1 = Trainer(model_str=A2C_str, atari_env=atari_env)
+    t1.train(total_timesteps=total_timesteps)
+
+    t2 = Trainer(model_str=DQN_str, atari_env=atari_env)
+    t2.train(total_timesteps=total_timesteps)
 
     # t.demonstrate()
     # t1.demonstrate()
