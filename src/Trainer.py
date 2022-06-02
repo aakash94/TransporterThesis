@@ -20,11 +20,13 @@ class Trainer():
         # logs_root = os.path.join(".", "logs", "baseline")
         if atari_env:
             env_name = "ALE/Enduro-v5"
+            env = gym.make(env_name)
         else:
             env_name = "CarRacing-v1"
+            env = gym.make(env_name, continuous=False)
 
         print("Env : ", env_name)
-        env = gym.make(env_name)
+        # env = gym.make(env_name)
         env = Monitor(env)
         env = FrameStackWrapper(env, frame_stack_count=frame_stack_count)
         self.env = env
