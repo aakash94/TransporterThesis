@@ -6,20 +6,25 @@ from collections import deque
 
 class FrameStackWrapper(gym.ObservationWrapper):
 
-    def __init__(self, env: gym.Env, frame_stack_count=4, convert_greyscale=False):
+    def __init__(self, env: gym.Env, frame_stack_count=1, motion=False, convert_greyscale=False):
         super().__init__(env)
         self.convert_greyscale = convert_greyscale
+        self.motion = motion
         self.frame_stack_count = frame_stack_count
         self.frames = deque(maxlen=frame_stack_count)
         state = self.reset()
         if isinstance(self.env.observation_space, gym.spaces.Box):
-            print("Correct Place")
             self.observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)
 
     def observation(self, obs):
         if self.convert_greyscale:
             # TODO: Merge 3 channels of colour into greyscale
             pass
+
+        if self.motion:
+            # TODO: Add opencv motion here
+            pass
+
         self.frames.append(obs)
         state = self.frames_to_state()
         return state
@@ -54,3 +59,4 @@ if __name__ == "__main__":
     # print("step shape ", observation.shape)
 
     print("done checking")
+    # TODO: Add action wrapper to change continuous to discrete.
