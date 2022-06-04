@@ -3,7 +3,6 @@ import gym
 from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 
-from FrameStackWrapper import FrameStackWrapper
 from ThesisWrapper import ThesisWrapper
 
 PPO_str = "PPO"
@@ -27,9 +26,7 @@ class Trainer():
             env = gym.make(env_name, continuous=False)
 
         print("Env : ", env_name)
-        # env = gym.make(env_name)
         env = Monitor(env)
-        # env = FrameStackWrapper(env, frame_stack_count=frame_stack_count, convert_greyscale=True)
         env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True)
         self.env = env
         logs_root = os.path.join(logs_root, env_name)
@@ -82,18 +79,8 @@ def main():
     atari_env = False
     total_timesteps = 5000000
 
-    # t0 = Trainer(model_str=PPO_str, atari_env=atari_env)
-    # t0.train(total_timesteps=total_timesteps)
-    #
-    # t1 = Trainer(model_str=A2C_str, atari_env=atari_env)
-    # t1.train(total_timesteps=total_timesteps)
-
     t = Trainer(model_str=DQN_str, atari_env=atari_env)
     t.train(total_timesteps=total_timesteps)
-
-    # t.demonstrate()
-    # t1.demonstrate()
-    # t2.demonstrate()
 
 
 if __name__ == "__main__":
