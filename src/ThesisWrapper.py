@@ -40,7 +40,8 @@ class ThesisWrapper(gym.ObservationWrapper):
         return frame
 
     def operations_on_stack(self):
-        state = np.concatenate(list(self.frames), axis=2)
+        # state = np.concatenate(list(self.frames), axis=2)
+        state = np.dstack(list(self.frames))
         return state
 
 
