@@ -10,7 +10,7 @@ class ThesisWrapper(gym.ObservationWrapper):
     def __init__(self,
                  env: gym.Env,
                  history_count=4,
-                 convert_greyscale=False):
+                 convert_greyscale=True):
         super().__init__(env)
         self.history_count = history_count
         self.convert_greyscale = convert_greyscale
