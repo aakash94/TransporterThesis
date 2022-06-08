@@ -1,6 +1,6 @@
 import os
 import gym
-from stable_baselines3 import A2C, DQN, PPO
+from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
 
 from ThesisWrapper import ThesisWrapper
