@@ -44,47 +44,6 @@ class ThesisWrapper(gym.ObservationWrapper):
         state = np.dstack(list(self.frames))
         return state
 
-    '''    
-    def see(self,observation):
-        global istep
-        image = np.array(observation, dtype="uint8")
-        w,h = (int(IMAGE_WIDTH_R), int(IMAGE_HEIGHT_R))
-        #image = cv2.resize(image, (w,h))
-        #imageSol = self.imageSol.copy()
-        imageSol = np.zeros((h,w,3), np.uint8) if bSEE else None
-        greyscaled = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        imgmov = cv2.absdiff(self.last_grey, greyscaled)
-        self.last_grey = greyscaled
-        cv2.accumulateWeighted(imgmov, self.running_average_img, AVERAGE_ALPHA)
-        background = cv2.convertScaleAbs(self.running_average_img)
-        #background = cv2.blur(background,(2,2))
-        ret, thimg = cv2.threshold(background, MOVEMENT_THRESHOLD, 255, cv2.THRESH_BINARY)
-        dilated = cv2.dilate(thimg, MORPH_KERNEL, iterations=3)
-        allcontours, ret = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if(bSEE):
-            cv2.drawContours(imageSol,allcontours, -1, (255,0,0), -1)
-            cv2.drawContours(imageSol,allcontours, -1, (255,255,0), 1)
-        contours = []
-        if(np.sum(dilated) > w*h/1.6):
-            return
-
-        for cnt in allcontours:
-            #cv2.drawContours(imageSol,[cnt], -1, (0,255,0), -1)
-            (x, y), radius = cv2.minEnclosingCircle(cnt)
-            x, y, radius = int(x), int(y), int(radius)
-            if(radius > 3):
-                contours.append((x, y, radius))
-
-        self.updateEntities(contours,image,imageSol)
-
-        if(bSEE):
-            #cv2.circle(imageSol,state,3,(0,120,255),-1)
-            imagebig = cv2.resize(imageSol, (int(IMAGE_WIDTH*3.5), int(IMAGE_HEIGHT*3.5)))
-            cv2.imshow("view",imagebig)
-            #self.saveImgS2S(image,imageSol)
-        return image
-        '''
-
 
 if __name__ == "__main__":
     env_name = "CarRacing-v1"
