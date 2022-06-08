@@ -10,6 +10,7 @@ class ThesisWrapper(gym.ObservationWrapper):
     def __init__(self,
                  env: gym.Env,
                  history_count=4,
+                 motion=True,
                  convert_greyscale=False):
         super().__init__(env)
         self.history_count = history_count
@@ -17,6 +18,7 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.frames = deque(maxlen=self.history_count)
         self.avg_image = None
         self.step_count = 0
+        self.motion = motion
         state = self.reset()
         if isinstance(self.env.observation_space, gym.spaces.Box):
             self.observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)
@@ -52,8 +54,11 @@ class ThesisWrapper(gym.ObservationWrapper):
 
     def operations_on_stack(self):
         # state = np.concatenate(list(self.frames), axis=2)
-        # state = np.dstack(list(self.frames))
-        state = np.dstack((self.frames[-1], self.avg_image))
+
+        if self.motion:
+            state = np.dstack((self.frames[-1], self.avg_image))
+        else:
+            state = np.dstack(list(self.frames))
         return state
 
 
