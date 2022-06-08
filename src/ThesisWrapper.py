@@ -16,17 +16,20 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.convert_greyscale = convert_greyscale
         self.frames = deque(maxlen=self.history_count)
         self.avg_image = None
+        self.step_count = 0
         state = self.reset()
         if isinstance(self.env.observation_space, gym.spaces.Box):
             self.observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)
 
     def observation(self, obs):
+        self.step_count += 1
         frame = self.operation_on_single_frame(obs=obs)
         self.frames.append(frame)
         state = self.operations_on_stack()
         return state
 
     def reset(self):
+        self.step_count = 0
         og_state = self.env.reset()
         self.avg_image = None
         frame = self.operation_on_single_frame(obs=og_state)
