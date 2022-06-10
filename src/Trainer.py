@@ -12,7 +12,7 @@ class Trainer():
     def __init__(self, atari_env=False, seed=42, verbose=0):
 
         frame_stack_count = 5
-        experiment_folder = "gfsw" + str(frame_stack_count) + ""
+        experiment_folder = "tw" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         model_save_path = os.path.join(".", "models", experiment_folder)
         model_str = "DQN"
@@ -27,7 +27,6 @@ class Trainer():
 
         print("Env : ", env_name)
         env = Monitor(env)
-        eval_env = Monitor(eval_env)
 
         env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True)
         eval_env = ThesisWrapper(eval_env, history_count=frame_stack_count, convert_greyscale=True)
@@ -35,7 +34,7 @@ class Trainer():
         # https://github.com/hill-a/stable-baselines/issues/1087
         self.eval_callback = EvalCallback(eval_env,
                                           best_model_save_path=model_save_path,
-                                          eval_freq=500,
+                                          eval_freq=100000,
                                           deterministic=True,
                                           render=False)
 
