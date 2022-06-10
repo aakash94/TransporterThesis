@@ -29,7 +29,7 @@ class Demonstrate():
             done = False
             state = self.env.reset()
             while not done:
-                action = self.model.predict(state)[0]
+                action, _states = self.model.predict(state)
                 # a = self.env.action_space.sample()
                 observation, reward, done, info = self.env.step(action)
                 self.env.render(mode="human")
