@@ -3,6 +3,7 @@ import gym.spaces as spaces
 import numpy as np
 from collections import deque
 import cv2
+import os
 
 
 class ThesisWrapper(gym.ObservationWrapper):
@@ -10,16 +11,21 @@ class ThesisWrapper(gym.ObservationWrapper):
     def __init__(self,
                  env: gym.Env,
                  history_count=4,
+                 dump_frames=False,
                  convert_greyscale=True):
         super().__init__(env)
         self.history_count = history_count
         self.convert_greyscale = convert_greyscale
+        self.dump_frames = dump_frames
+        self.frames_dump_path = os.path.join(".", "frames", "dump")
         self.frames = deque(maxlen=self.history_count)
         state = self.reset()
         if isinstance(self.env.observation_space, gym.spaces.Box):
             self.observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)
 
     def observation(self, obs):
+        if self.dump_frames:
+            pass
         frame = self.operation_on_single_frame(obs=obs)
         self.frames.append(frame)
         state = self.operations_on_stack()
