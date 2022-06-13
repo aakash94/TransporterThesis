@@ -8,8 +8,9 @@ class Demonstrate():
 
     def __init__(self, atari_env=False, seed=42, verbose=0):
         frame_stack_count = 5
-        model_name = "best_model.zip"
-        experiment_folder = "tw" + str(frame_stack_count) + ""
+        model_name = "saved_model.zip"
+        experiment_folder = "trial_expw" + str(frame_stack_count) + ""
+        # vexperiment_folder = "tw" + str(frame_stack_count) + ""
         model_save_path = os.path.join(".", "models", experiment_folder, model_name)
 
         if atari_env:
@@ -26,21 +27,27 @@ class Demonstrate():
 
     def demo_model(self, loop_count=10):
         for i in range(loop_count):
+            total_reward = 0
             done = False
             state = self.env.reset()
             while not done:
                 action, _states = self.model.predict(state)
                 # a = self.env.action_space.sample()
                 observation, reward, done, info = self.env.step(action)
+                total_reward += reward
                 self.env.render(mode="human")
+            print("Iteration ", i, " Reward :", total_reward)
 
     def demo_random(self, loop_count=10):
         for i in range(loop_count):
+            total_reward = 0
             done = False
             while not done:
                 action = self.env.action_space.sample()
                 observation, reward, done, info = self.env.step(action)
+                total_reward += reward
                 self.env.render(mode="human")
+            print("Iteration ", i, " Reward :", total_reward)
 
     def dump_frames(self, loop_count=100):
         pass
@@ -48,10 +55,10 @@ class Demonstrate():
 
 def main():
     d = Demonstrate()
-    # print("Random!")
-    # d.demo_random()
-    print("Model!")
-    d.demo_model()
+    print("\n\nRandom!")
+    d.demo_random(loop_count=5)
+    print("\n\nModel!")
+    d.demo_model(loop_count=5)
 
 
 if __name__ == "__main__":
