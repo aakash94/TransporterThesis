@@ -1,20 +1,23 @@
 import os
 import gym
+
+from collections import defaultdict
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import EvalCallback
 
 from ThesisWrapper import ThesisWrapper
+from VideoRecorderCallback import VideoRecorderCallback
 
 
-class Trainer():
+class Trainer:
 
     def __init__(self, atari_env=False, seed=42, verbose=0):
 
         frame_stack_count = 5
-        experiment_folder = "tw" + str(frame_stack_count) + ""
+        experiment_folder = "video_ex" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
-        model_save_path = os.path.join(".", "models", experiment_folder)
+        self.model_save_path = os.path.join(".", "models", experiment_folder, "saved_model.zip")
         model_str = "DQN"
         if atari_env:
             env_name = "ALE/Enduro-v5"
@@ -33,12 +36,13 @@ class Trainer():
 
         # https://github.com/hill-a/stable-baselines/issues/1087
         self.eval_callback = EvalCallback(eval_env,
-                                          best_model_save_path=model_save_path,
+                                          best_model_save_path=self.model_save_path,
                                           eval_freq=100000,
                                           deterministic=True,
                                           render=False)
 
         self.env = env
+        self.video_recorder_callback = VideoRecorderCallback(env=eval_env, render_freq=500000, n_eval_episodes=4)
 
         logs_root = os.path.join(logs_root, env_name)
 
@@ -55,24 +59,52 @@ class Trainer():
 
     def train(self, total_timesteps=1000000):
         print("Training")
-        self.model.learn(total_timesteps=total_timesteps, callback=self.eval_callback)
+        # self.model.learn(total_timesteps=total_timesteps, callback=self.eval_callback)
+        self.model.learn(total_timesteps=total_timesteps, callback=self.video_recorder_callback)
+        # self.model.learn(total_timesteps=total_timesteps)
 
     def demonstrate(self, episode_count=10):
+        action_count = defaultdict(int)
         for ep in range(episode_count):
             obs = self.env.reset()
             done = False
             while not done:
-                action, _states = self.model.predict(obs)
+                action, _states = self.model.predict(obs, deterministic=True)
                 obs, rewards, done, info = self.env.step(action)
                 self.env.render()
+                try:
+                    action_count[action] += 1
+                except:
+                    print("\n\n\n\n\n\n\n\n\n\n\n\n\n!!!!!!!!!!!!!!\n")
+                    print("Episode", episode_count)
+                    print("Action", action)
+                    print("type", type(action))
+                    print("\n!!!!!!!!!!!!!!\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                finally:
+                    pass
+
+        print("\n\nAction Count\n", action_count)
+
+    def save_model(self):
+        self.model.save(path=self.model_save_path)
+
+    def load_model(self):
+        self.model = DQN.load(path=self.model_save_path)
 
 
 def main():
     atari_env = False
-    total_timesteps = 5000000
+    total_timesteps = 2000000
 
     t = Trainer(atari_env=atari_env)
     t.train(total_timesteps=total_timesteps)
+    print("Done Training")
+    print("Saving Model")
+    t.save_model()
+    t.demonstrate()
+    t.load_model()
+    print("Loaded Model")
+    t.demonstrate()
 
 
 if __name__ == "__main__":
