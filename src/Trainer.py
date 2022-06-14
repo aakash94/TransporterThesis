@@ -5,14 +5,30 @@ from collections import defaultdict
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.evaluation import evaluate_policy
+
+from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.env_util import make_vec_env
 
 from ThesisWrapper import ThesisWrapper
 from VideoRecorderCallback import VideoRecorderCallback
-from stable_baselines3.common.evaluation import evaluate_policy
-
 
 
 class Trainer:
+
+    def get_env(self, frame_stack_count, atari_env=False, seed=42):
+        if atari_env:
+            env_name = "ALE/Enduro-v5"
+            env = gym.make(env_name)
+        else:
+            env_name = "CarRacing-v1"
+            env = gym.make(env_name, continuous=False)
+            eval_env = gym.make(env_name, continuous=False)
+
+        env = Monitor(env)
+        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
+        return env
 
     def __init__(self, atari_env=False, seed=42, verbose=0):
 
@@ -23,28 +39,18 @@ class Trainer:
         model_str = "DQN"
         if atari_env:
             env_name = "ALE/Enduro-v5"
-            env = gym.make(env_name)
-            eval_env = gym.make(env_name)
         else:
             env_name = "CarRacing-v1"
-            env = gym.make(env_name, continuous=False)
-            eval_env = gym.make(env_name, continuous=False)
-
         print("Env : ", env_name)
-        env = Monitor(env)
 
-        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True)
-        eval_env = ThesisWrapper(eval_env, history_count=frame_stack_count, convert_greyscale=True)
+        env = self.get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
+        eval_env = self.get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
 
         # https://github.com/hill-a/stable-baselines/issues/1087
-        self.eval_callback = EvalCallback(eval_env,
-                                          best_model_save_path=self.model_save_path,
-                                          eval_freq=100000,
-                                          deterministic=True,
-                                          render=False)
+        # self.eval_callback = EvalCallback(eval_env,best_model_save_path=self.model_save_path,eval_freq=100000,deterministic=True,render=False)
 
         self.env = env
-        self.video_recorder_callback = VideoRecorderCallback(env=eval_env, render_freq=500000, n_eval_episodes=4)
+        # self.video_recorder_callback = VideoRecorderCallback(env=eval_env, render_freq=500000, n_eval_episodes=4)
 
         logs_root = os.path.join(logs_root, env_name)
 
