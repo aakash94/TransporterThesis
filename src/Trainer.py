@@ -8,6 +8,8 @@ from stable_baselines3.common.callbacks import EvalCallback
 
 from ThesisWrapper import ThesisWrapper
 from VideoRecorderCallback import VideoRecorderCallback
+from stable_baselines3.common.evaluation import evaluate_policy
+
 
 
 class Trainer:
@@ -60,8 +62,8 @@ class Trainer:
     def train(self, total_timesteps=1000000):
         print("Training")
         # self.model.learn(total_timesteps=total_timesteps, callback=self.eval_callback)
-        self.model.learn(total_timesteps=total_timesteps, callback=self.video_recorder_callback)
-        # self.model.learn(total_timesteps=total_timesteps)
+        # self.model.learn(total_timesteps=total_timesteps, callback=self.video_recorder_callback)
+        self.model.learn(total_timesteps=total_timesteps)
 
     def demonstrate(self, episode_count=10):
         action_count = defaultdict(int)
@@ -99,12 +101,16 @@ def main():
     t = Trainer(atari_env=atari_env)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
+    mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
+    print("Mean, Std", mean_reward, std_reward)
     print("Saving Model")
     t.save_model()
-    t.demonstrate()
+    # t.demonstrate()
     t.load_model()
     print("Loaded Model")
-    t.demonstrate()
+    # t.demonstrate()
+    mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
+    print("Mean, Std", mean_reward, std_reward)
 
 
 if __name__ == "__main__":
