@@ -8,32 +8,46 @@ from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 
 from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecMonitor
 
 from ThesisWrapper import ThesisWrapper
-from VideoRecorderCallback import VideoRecorderCallback
+
+from typing import Callable
 
 
-class Trainer:
-
-    def get_env(self, frame_stack_count, atari_env=False, seed=42):
+def get_env(rank: int, frame_stack_count: int = 4, atari_env: bool = False, seed=42):
+    def _init() -> gym.Env:
         if atari_env:
             env_name = "ALE/Enduro-v5"
             env = gym.make(env_name)
         else:
             env_name = "CarRacing-v1"
             env = gym.make(env_name, continuous=False)
-            eval_env = gym.make(env_name, continuous=False)
-
-        env = Monitor(env)
-        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
+        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed + rank)
         return env
 
-    def __init__(self, atari_env=False, seed=42, verbose=0):
+    set_random_seed(seed=seed)
+    return _init()
+
+
+def make_env(frame_stack_count: int = 4, atari_env: bool = False, seed=42):
+    if atari_env:
+        env_name = "ALE/Enduro-v5"
+        env = gym.make(env_name)
+    else:
+        env_name = "CarRacing-v1"
+        env = gym.make(env_name, continuous=False)
+    env.seed(seed=seed)
+    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
+    return env
+
+
+class Trainer:
+
+    def __init__(self, atari_env=False, seed=42, verbose=0, num_cpu=4):
 
         frame_stack_count = 5
-        experiment_folder = "video_ex" + str(frame_stack_count) + ""
+        experiment_folder = "u__" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, "saved_model.zip")
         model_str = "DQN"
@@ -43,15 +57,17 @@ class Trainer:
             env_name = "CarRacing-v1"
         print("Env : ", env_name)
 
-        env = self.get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
-        eval_env = self.get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
-
-        # https://github.com/hill-a/stable-baselines/issues/1087
-        # self.eval_callback = EvalCallback(eval_env,best_model_save_path=self.model_save_path,eval_freq=100000,deterministic=True,render=False)
+        # env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
+        self.eval_env = get_env(rank=0, frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
+        env = SubprocVecEnv([
+            get_env(rank=i,
+                    frame_stack_count=frame_stack_count,
+                    atari_env=atari_env,
+                    seed=seed) for i in range(num_cpu)
+        ])
+        env = VecMonitor(env)
 
         self.env = env
-        # self.video_recorder_callback = VideoRecorderCallback(env=eval_env, render_freq=500000, n_eval_episodes=4)
-
         logs_root = os.path.join(logs_root, env_name)
 
         print("Model ", model_str)
@@ -94,29 +110,34 @@ class Trainer:
         print("\n\nAction Count\n", action_count)
 
     def save_model(self):
+        print("Saving Model")
         self.model.save(path=self.model_save_path)
+        print("Model Saved")
 
     def load_model(self):
+        print("Loading Model")
         self.model = DQN.load(path=self.model_save_path)
+        print("Model Loaded")
 
 
 def main():
     atari_env = False
-    total_timesteps = 2000000
+    total_timesteps = 20000
 
     t = Trainer(atari_env=atari_env)
+    print("Model Created")
+    mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
+    print("Mean: ", mean_reward, "Std :", std_reward)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
     mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
-    print("Mean, Std", mean_reward, std_reward)
-    print("Saving Model")
+    print("Mean: ", mean_reward, "Std :", std_reward)
     t.save_model()
     # t.demonstrate()
     t.load_model()
-    print("Loaded Model")
     # t.demonstrate()
-    mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
-    print("Mean, Std", mean_reward, std_reward)
+    mean_reward, std_reward = evaluate_policy(t.model, t.eval_env, n_eval_episodes=100)
+    print("Mean: ", mean_reward, "Std :", std_reward)
 
 
 if __name__ == "__main__":

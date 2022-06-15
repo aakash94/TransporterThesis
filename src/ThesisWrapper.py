@@ -35,7 +35,9 @@ class ThesisWrapper(gym.ObservationWrapper):
         return state
 
     def reset(self):
-        og_state = self.env.reset(seed=self.seed_val)
+        # TODO: to seed or not to seed?
+        # og_state = self.env.reset(seed=self.seed_val)
+        og_state = self.env.reset()
         frame = self.operation_on_single_frame(obs=og_state)
         for i in range(self.history_count - 1):
             self.frames.append(frame)
