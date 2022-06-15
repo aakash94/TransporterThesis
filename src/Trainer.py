@@ -4,31 +4,30 @@ import gym
 from collections import defaultdict
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.evaluation import evaluate_policy
 
 from ThesisWrapper import ThesisWrapper
 
 
+def get_env(frame_stack_count, atari_env=False, seed=42):
+    if atari_env:
+        env_name = "ALE/Enduro-v5"
+        env = gym.make(env_name)
+    else:
+        env_name = "CarRacing-v1"
+        env = gym.make(env_name, continuous=False)
+    env = Monitor(env)
+    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
+    return env
+
+
 class Trainer:
 
-    def get_env(self, frame_stack_count, atari_env=False, seed=42):
-        if atari_env:
-            env_name = "ALE/Enduro-v5"
-            env = gym.make(env_name)
-        else:
-            env_name = "CarRacing-v1"
-            env = gym.make(env_name, continuous=False)
-            eval_env = gym.make(env_name, continuous=False)
-
-        env = Monitor(env)
-        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
-        return env
-
-    def __init__(self, atari_env=False, seed=42, verbose=0):
-
-        frame_stack_count = 5
+    def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=5):
+        model_name = "saved_model.zip"
         experiment_folder = "video_ex" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
-        self.model_save_path = os.path.join(".", "models", experiment_folder, "saved_model.zip")
+        self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
         if atari_env:
             env_name = "ALE/Enduro-v5"
@@ -36,8 +35,8 @@ class Trainer:
             env_name = "CarRacing-v1"
         print("Env : ", env_name)
 
-        env = self.get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
-        eval_env = self.get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
+        env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
+        self.eval_env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
 
         # https://github.com/hill-a/stable-baselines/issues/1087
         # self.eval_callback = EvalCallback(eval_env,best_model_save_path=self.model_save_path,eval_freq=100000,deterministic=True,render=False)
@@ -87,32 +86,37 @@ class Trainer:
         print("\n\nAction Count\n", action_count)
 
     def save_model(self):
+        print("Saving Model")
         self.model.save(path=self.model_save_path)
+        print("Saved Model")
 
     def load_model(self):
+        print("Loading Model")
         self.model = DQN.load(path=self.model_save_path)
+        print("Loaded Model")
+
+    def evaluate(self, n_eval_episodes=100):
+        mean_reward, std_reward = evaluate_policy(self.model, self.eval_env, n_eval_episodes=n_eval_episodes)
+        print("\nMean = ", mean_reward, "\t Std = ", std_reward)
+        print()
 
 
 def main():
     atari_env = False
     total_timesteps = 2000000
+    eval_count = 20
 
     t = Trainer(atari_env=atari_env)
+    t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
-    mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
-    print("Mean, Std", mean_reward, std_reward)
-    print("Saving Model")
+    t.evaluate(n_eval_episodes=eval_count)
     t.save_model()
     # t.demonstrate()
     t.load_model()
-    print("Loaded Model")
     # t.demonstrate()
-    mean_reward, std_reward = evaluate_policy(t.model, t.model.get_env(), n_eval_episodes=100)
-    print("Mean, Std", mean_reward, std_reward)
+    t.evaluate(n_eval_episodes=eval_count)
 
 
 if __name__ == "__main__":
-    from stable_baselines3.common.evaluation import evaluate_policy
-
     main()
