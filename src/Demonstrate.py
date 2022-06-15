@@ -1,7 +1,9 @@
 import os
 import gym
 from stable_baselines3 import DQN
+from Trainer import Trainer, get_env
 from ThesisWrapper import ThesisWrapper
+from stable_baselines3.common.evaluation import evaluate_policy
 
 
 class Demonstrate():
@@ -10,20 +12,16 @@ class Demonstrate():
         frame_stack_count = 5
         model_name = "saved_model.zip"
         experiment_folder = "trial_expw" + str(frame_stack_count) + ""
-        # vexperiment_folder = "tw" + str(frame_stack_count) + ""
         model_save_path = os.path.join(".", "models", experiment_folder, model_name)
-
-        if atari_env:
-            env_name = "ALE/Enduro-v5"
-            env = gym.make(env_name)
-        else:
-            env_name = "CarRacing-v1"
-            env = gym.make(env_name, continuous=False)
-
-        print("Env : ", env_name)
+        env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
         env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True)
         self.env = env
         self.model = DQN.load(path=model_save_path, env=self.env)
+
+    def evaluate(self, n_eval_episodes=100):
+        mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=n_eval_episodes)
+        print("\nMean = ", mean_reward, "\t Std = ", std_reward)
+        print()
 
     def demo_model(self, loop_count=10):
         for i in range(loop_count):
@@ -32,7 +30,6 @@ class Demonstrate():
             state = self.env.reset()
             while not done:
                 action, _states = self.model.predict(state)
-                # a = self.env.action_space.sample()
                 observation, reward, done, info = self.env.step(action)
                 total_reward += reward
                 self.env.render(mode="human")

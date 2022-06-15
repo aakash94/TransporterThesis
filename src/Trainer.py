@@ -16,6 +16,7 @@ def get_env(frame_stack_count, atari_env=False, seed=42):
     else:
         env_name = "CarRacing-v1"
         env = gym.make(env_name, continuous=False)
+    print(env_name)
     env = Monitor(env)
     env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
     return env
@@ -33,7 +34,6 @@ class Trainer:
             env_name = "ALE/Enduro-v5"
         else:
             env_name = "CarRacing-v1"
-        print("Env : ", env_name)
 
         env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
         self.eval_env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
