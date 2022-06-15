@@ -4,15 +4,8 @@ import gym
 from collections import defaultdict
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.callbacks import EvalCallback
-from stable_baselines3.common.evaluation import evaluate_policy
-
-from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from stable_baselines3.common.env_util import make_vec_env
 
 from ThesisWrapper import ThesisWrapper
-from VideoRecorderCallback import VideoRecorderCallback
 
 
 class Trainer:
@@ -120,4 +113,6 @@ def main():
 
 
 if __name__ == "__main__":
+    from stable_baselines3.common.evaluation import evaluate_policy
+
     main()
