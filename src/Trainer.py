@@ -18,7 +18,7 @@ def get_env(frame_stack_count, atari_env=False, seed=42):
         env = gym.make(env_name, continuous=False)
     print(env_name)
     env = Monitor(env)
-    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
+    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed, env_name=env_name)
     return env
 
 
@@ -26,7 +26,7 @@ class Trainer:
 
     def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=5):
         model_name = "saved_model.zip"
-        experiment_folder = "video_ex" + str(frame_stack_count) + ""
+        experiment_folder = "fo" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
