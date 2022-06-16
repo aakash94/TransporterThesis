@@ -19,6 +19,7 @@ class ThesisWrapper(gym.ObservationWrapper):
         super().__init__(env)
         self.count = 0
         self.seed_val = seed
+        # env.seed(seed=self.seed_val)
         np.random.seed(self.seed_val)
         self.history_count = history_count
         self.convert_greyscale = convert_greyscale
@@ -53,7 +54,8 @@ class ThesisWrapper(gym.ObservationWrapper):
 
     def reset(self):
         self.count = 0
-        og_state = self.env.reset(seed=self.seed_val)
+        # og_state = self.env.reset(seed=self.seed_val)
+        og_state = self.env.reset()
         frame = self.operation_on_single_frame(obs=og_state)
         for i in range(self.history_count - 1):
             self.frames.append(frame)
