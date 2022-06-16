@@ -14,7 +14,6 @@ class Demonstrate():
         experiment_folder = "trial_expw" + str(frame_stack_count) + ""
         model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
-        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True)
         self.env = env
         self.model = DQN.load(path=model_save_path, env=self.env)
 
