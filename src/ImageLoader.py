@@ -34,7 +34,7 @@ class ImageLoader(Dataset):
             tup = (i1, i2)
             i_tuples.append(tup)
 
-    def __init__(self, env_name, t_delta=10):
+    def __init__(self, env_name: str = "CarRacing-v1", t_delta: int = 10):
         self.dump_path = os.path.join(".", "frames", "dump", env_name)
         self.t_delta = t_delta
         dirs = self.get_dir_list(root_path=self.dump_path)
