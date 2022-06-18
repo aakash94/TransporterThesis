@@ -26,7 +26,7 @@ class Trainer:
 
     def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=5):
         model_name = "saved_model.zip"
-        experiment_folder = "fo" + str(frame_stack_count) + ""
+        experiment_folder = "gg" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
@@ -103,11 +103,11 @@ class Trainer:
 
 def main():
     atari_env = False
-    total_timesteps = 2000000
-    eval_count = 20
+    total_timesteps = 5000000
+    eval_count = 30
 
     t = Trainer(atari_env=atari_env)
-    t.evaluate(n_eval_episodes=eval_count)
+    # t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
     t.evaluate(n_eval_episodes=eval_count)

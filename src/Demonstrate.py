@@ -11,11 +11,17 @@ class Demonstrate():
     def __init__(self, atari_env=False, seed=42, verbose=0):
         frame_stack_count = 5
         model_name = "saved_model.zip"
-        experiment_folder = "trial_expw" + str(frame_stack_count) + ""
+        experiment_folder = "gg" + str(frame_stack_count) + ""
         model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
         self.env = env
-        self.model = DQN.load(path=model_save_path, env=self.env)
+        self.model = DQN(
+            'CnnPolicy',
+            self.env,
+            buffer_size=50000,
+            verbose=verbose,
+            seed=seed)
+        self.model = DQN.load(path=model_save_path)
 
     def evaluate(self, n_eval_episodes=100):
         mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=n_eval_episodes)
@@ -48,13 +54,18 @@ class Demonstrate():
     def dump_frames(self, loop_count=100):
         pass
 
+    def evaluate(self, n_eval_episodes=100):
+        mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=n_eval_episodes)
+        print("\nMean = ", mean_reward, "\t Std = ", std_reward)
+        print()
 
 def main():
     d = Demonstrate()
-    print("\n\nRandom!")
-    d.demo_random(loop_count=5)
+    # print("\n\nRandom!")
+    # d.demo_random(loop_count=2)
     print("\n\nModel!")
-    d.demo_model(loop_count=5)
+    # d.demo_model(loop_count=5)
+    d.evaluate(n_eval_episodes=1000)
 
 
 if __name__ == "__main__":
