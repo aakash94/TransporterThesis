@@ -1,7 +1,7 @@
 import torch
-from torch import nn, optim
-import transporter
+
 import data
+import transporter
 
 batch_size = 32
 image_channels = 1
@@ -18,7 +18,6 @@ transporter = transporter.Transporter(
 )
 
 optimizer = torch.optim.Adam(transporter.parameters())
-
 
 num_iterations = 1e5
 for it in range(int(num_iterations)):

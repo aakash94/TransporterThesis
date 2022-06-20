@@ -1,12 +1,12 @@
-import os
-import json
 import argparse
+import json
+import os
 
-from PIL import Image
-from alt_baselines import WarpFrame, get_car_env
-from torchvision import transforms
-from tqdm import tqdm
 import numpy as np
+from PIL import Image
+from tqdm import tqdm
+
+from alt_baselines import get_car_env
 
 
 def main():

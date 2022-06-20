@@ -1,16 +1,16 @@
-import numpy as np
 import os
 
+import numpy as np
+
 os.environ.setdefault('PATH', '')
-from collections import deque
 import gym
-from gym import spaces
 import cv2
 
 cv2.ocl.setUseOpenCL(False)
 
 
 class WarpFrame(gym.ObservationWrapper):
+
     def __init__(self, env, width=84, height=84, grayscale=True, dict_space_key=None):
         """
         Warp frames to 84x84 as done in the Nature paper and later work.
@@ -64,6 +64,7 @@ class WarpFrame(gym.ObservationWrapper):
 
 
 class NoopResetEnv(gym.Wrapper):
+
     def __init__(self, env, noop_max=30):
         """Sample initial states by taking random number of no-ops on reset.
         No-op is assumed to be action 0.
@@ -94,6 +95,7 @@ class NoopResetEnv(gym.Wrapper):
 
 
 class MaxAndSkipEnv(gym.Wrapper):
+
     def __init__(self, env, skip=4):
         """Return only every `skip`-th frame"""
         gym.Wrapper.__init__(self, env)
@@ -123,6 +125,7 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 
 class TimeLimit(gym.Wrapper):
+
     def __init__(self, env, max_episode_steps=None):
         super(TimeLimit, self).__init__(env)
         self._max_episode_steps = max_episode_steps
@@ -141,19 +144,8 @@ class TimeLimit(gym.Wrapper):
         return self.env.reset(**kwargs)
 
 
-def get_car_env(env_id = "CarRacing-v0", max_episode_steps=None):
-    env = gym.make(env_id)
-    # env = NoopResetEnv(env, noop_max=30)
-    if max_episode_steps is not None:
-        env = TimeLimit(env, max_episode_steps=max_episode_steps)
-    return env
-
-
-def make_atari(env_id, max_episode_steps=None):
-    env = gym.make(env_id)
-    assert 'NoFrameskip' in env.spec.id
-    env = NoopResetEnv(env, noop_max=30)
-    env = MaxAndSkipEnv(env, skip=4)
+def get_car_env(env_id="CarRacing-v0", max_episode_steps=None):
+    env = gym.make(env_id, continuous=False)
     if max_episode_steps is not None:
         env = TimeLimit(env, max_episode_steps=max_episode_steps)
     return env

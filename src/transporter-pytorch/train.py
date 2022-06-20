@@ -1,8 +1,7 @@
-import torch
-from torch import nn
 import numpy as np
-import transporter
 import torch.utils.data
+
+import transporter
 
 batch_size = 64
 image_channels = 3
@@ -20,7 +19,6 @@ dataset = torch.utils.data.TensorDataset(
 
 loader = torch.utils.data.DataLoader(
     dataset, batch_size=batch_size, pin_memory=True)
-
 
 model = transporter.Transporter(
     feature_encoder, pose_regressor, refine_net

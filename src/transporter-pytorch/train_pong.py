@@ -1,16 +1,17 @@
 import json
-from datetime import datetime
-import socket
 import os
+import socket
+from datetime import datetime
+
 import torch
 import torch.utils.data
-from torch.utils.tensorboard import SummaryWriter
 import torchvision
+from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
-from data import Dataset, Sampler
+
 import transporter
 import utils
-
+from data import Dataset, Sampler
 
 
 def get_config():
@@ -37,6 +38,7 @@ def _get_model(config):
     refine_net = transporter.RefineNet(config.image_channels)
 
     return transporter.Transporter(feature_encoder, pose_regressor, refine_net)
+
 
 def _get_data_loader(config):
     transform = transforms.ToTensor()

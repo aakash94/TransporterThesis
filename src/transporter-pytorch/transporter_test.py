@@ -1,13 +1,17 @@
-import torch
-import transporter
 import unittest
+
+import torch
+
+import transporter
 
 batch_size = 8
 image_channels = 1
 num_features = 32
 k = 1
 
+
 class TransporterTest(unittest.TestCase):
+
     def testEncoder(self):
         out_channels = 128
         encoder = transporter.FeatureEncoder(
@@ -39,7 +43,7 @@ class TransporterTest(unittest.TestCase):
         N, K, H, W, D = 1, 2, 32, 32, 4
         source_keypoints = torch.zeros(N, K, H, W)
         target_keypoints = torch.zeros(N, K, H, W)
-        source_features  = torch.zeros(N, D, H, W)
+        source_features = torch.zeros(N, D, H, W)
         target_features = torch.zeros(N, D, H, W)
         transported = transporter.transport(
             source_keypoints,
@@ -48,6 +52,7 @@ class TransporterTest(unittest.TestCase):
             target_features
         )
         self.assertEqual(transported.shape, target_features.shape)
+
 
 if __name__ == "__main__":
     unittest.main()

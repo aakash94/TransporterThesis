@@ -1,43 +1,43 @@
-import numpy as np
-import torch
 import json
-from PIL import Image
+
+import numpy as np
 import torch.utils.data
+from PIL import Image
 
 
-def generate(num_samples=1, 
+def generate(num_samples=1,
              size=16, dx=5):
     im = np.zeros((num_samples, size, size), dtype=np.float32)
     imt = np.zeros((num_samples, size, size), dtype=np.float32)
-    
+
     x = np.random.randint(size, size=(num_samples,))
     y = np.random.randint(size, size=(num_samples,))
-    
+
     for di in range(-1, 2):
         for dj in range(-1, 2):
-            im[np.arange(num_samples), 
-               np.clip(y + di, 0, size-1), 
-               np.clip(x + dj, 0, size-1)] = 1.
+            im[np.arange(num_samples),
+               np.clip(y + di, 0, size - 1),
+               np.clip(x + dj, 0, size - 1)] = 1.
     # im[:, y][x] = 1.
-    
-    
+
     # dx = np.random.randint(0, 5, size=(num_samples))
-    dx = np.ones((num_samples, ), dtype=np.int) * dx
-    
+    dx = np.ones((num_samples,), dtype=np.int) * dx
+
     for di in range(-1, 2):
         for dj in range(-1, 2):
             imt[np.arange(num_samples),
-                (np.clip(y + di, 0, size-1)), 
-                (np.clip(x + dx + dj, 0, size-1))] = 1.
-    
+                (np.clip(y + di, 0, size - 1)),
+                (np.clip(x + dx + dj, 0, size - 1))] = 1.
+
     return im, imt
-    
+
+
 def vis_sample(sample):
     im, imt = sample
     im = np.concatenate(im, 0)
     imt = np.concatenate(imt, 0)
     print(im.shape)
-    
+
     fig, ax = plt.subplots(1, 2)
     ax[0].imshow(im, cmap='gray')
     ax[1].imshow(imt, cmap='gray')
@@ -47,6 +47,7 @@ def vis_sample(sample):
 
 class Dataset(object):
     _meta_data_file = 'metadata.json'
+
     def __init__(self, root, transform=None):
         self._root = root
         self._transform = transform
@@ -77,12 +78,14 @@ class Dataset(object):
             imtp1 = self._transform(imtp1)
 
         return imt, imtp1
-    
+
     def get_trajectory(self, idx):
         images = [np.array(Image.open('{}/{}/{}.png'.format(self._root, idx, t))) for t in range(self.num_timesteps)]
         return [self._transform(im) for im in images]
 
+
 class Sampler(torch.utils.data.Sampler):
+
     def __init__(self, dataset):
         self._dataset = dataset
 

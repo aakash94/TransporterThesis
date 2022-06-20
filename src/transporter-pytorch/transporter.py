@@ -1,9 +1,11 @@
 import torch
 from torch import nn
+
 from utils import spatial_softmax
 
 
 class Block(nn.Module):
+
     def __init__(self, in_channels, out_channels, kernel_size=(3, 3), stride=1,
                  padding=1):
         super(Block, self).__init__()
@@ -23,14 +25,13 @@ class FeatureEncoder(nn.Module):
     def __init__(self, in_channels=3):
         super(FeatureEncoder, self).__init__()
         self.net = nn.Sequential(
-            Block(in_channels, 32, kernel_size=(7, 7), stride=1, padding=3), # 1
+            Block(in_channels, 32, kernel_size=(7, 7), stride=1, padding=3),  # 1
             Block(32, 32, kernel_size=(3, 3), stride=1),  # 2
             Block(32, 64, kernel_size=(3, 3), stride=2),  # 3
             Block(64, 64, kernel_size=(3, 3), stride=1),  # 4
-            Block(64, 128, kernel_size=(3, 3), stride=2), # 5
+            Block(64, 128, kernel_size=(3, 3), stride=2),  # 5
             Block(128, 128, kernel_size=(3, 3), stride=1),  # 6        
         )
-
 
     def forward(self, x):
         """
@@ -53,11 +54,11 @@ class PoseRegressor(nn.Module):
     def __init__(self, in_channels=3, k=1):
         super(PoseRegressor, self).__init__()
         self.net = nn.Sequential(
-            Block(in_channels, 32, kernel_size=(7, 7), stride=1, padding=3), # 1
+            Block(in_channels, 32, kernel_size=(7, 7), stride=1, padding=3),  # 1
             Block(32, 32, kernel_size=(3, 3), stride=1),  # 2
             Block(32, 64, kernel_size=(3, 3), stride=2),  # 3
             Block(64, 64, kernel_size=(3, 3), stride=1),  # 4
-            Block(64, 128, kernel_size=(3, 3), stride=2), # 5
+            Block(64, 128, kernel_size=(3, 3), stride=2),  # 5
             Block(128, 128, kernel_size=(3, 3), stride=1),  # 6        
         )
         self.regressor = nn.Conv2d(128, k, kernel_size=(1, 1))
@@ -82,22 +83,22 @@ class RefineNet(nn.Module):
     def __init__(self, num_channels):
         super(RefineNet, self).__init__()
         self.net = nn.Sequential(
-            Block(128, 128, kernel_size=(3, 3), stride=1), # 6 
-            Block(128, 64, kernel_size=(3, 3), stride=1), # 5
+            Block(128, 128, kernel_size=(3, 3), stride=1),  # 6
+            Block(128, 64, kernel_size=(3, 3), stride=1),  # 5
             nn.UpsamplingBilinear2d(scale_factor=2),
             Block(64, 64, kernel_size=(3, 3), stride=1),  # 4
             Block(64, 32, kernel_size=(3, 3), stride=1),  # 3
             nn.UpsamplingBilinear2d(scale_factor=2),
             Block(32, 32, kernel_size=(3, 3), stride=1),  # 2
-            Block(32, num_channels, kernel_size=(7, 7), stride=1, padding=3), # 1
+            Block(32, num_channels, kernel_size=(7, 7), stride=1, padding=3),  # 1
         )
-
 
     def forward(self, x):
         """
         x: the transported feature map.
         """
         return self.net(x)
+
 
 def compute_keypoint_location_mean(features):
     S_row = features.sum(-1)  # N, K, H
@@ -107,7 +108,7 @@ def compute_keypoint_location_mean(features):
     u_row = S_row.mul(torch.linspace(-1, 1, S_row.size(-1), dtype=features.dtype, device=features.device)).sum(-1)
     # N, K
     u_col = S_col.mul(torch.linspace(-1, 1, S_col.size(-1), dtype=features.dtype, device=features.device)).sum(-1)
-    return torch.stack((u_row, u_col), -1) # N, K, 2
+    return torch.stack((u_row, u_col), -1)  # N, K, 2
 
 
 def gaussian_map(features, std=0.2):
@@ -125,7 +126,7 @@ def gaussian_map(features, std=0.2):
     inv_std = 1 / std
     g_y = torch.pow(y - mu_y, 2)
     g_x = torch.pow(x - mu_x, 2)
-    dist = (g_y + g_x) * inv_std**2
+    dist = (g_y + g_x) * inv_std ** 2
     g_yx = torch.exp(-dist)
     # g_yx = g_yx.permute([0, 2, 3, 1])
     return g_yx
