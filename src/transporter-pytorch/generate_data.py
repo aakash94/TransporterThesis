@@ -17,8 +17,7 @@ def main():
     parser.add_argument('--seed', default=4242, type=int)
     args = parser.parse_args()
 
-    # env_name = "PongNoFrameskip-v4"
-    env_name = "CarRacing-v0"
+    env_name = "CarRacing-v1"
 
     num_trajectories = args.num_trajectories
     datadir = args.datadir
@@ -27,7 +26,8 @@ def main():
 
     def make_env(env_id, num_steps):
         env = get_car_env(env_id=env_id, max_episode_steps=num_steps)
-        return WarpFrame(env, 80, 80, grayscale=False)
+        # env = WarpFrame(env, 80, 80, grayscale=False)
+        return env
 
     env = make_env(env_id=env_name, num_steps=num_steps)
     obs = env.reset()
