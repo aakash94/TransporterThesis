@@ -1,24 +1,23 @@
-import os
-import json
 import argparse
+import json
+import os
 
-from PIL import Image
-from alt_baselines import WarpFrame, get_car_env
-from torchvision import transforms
-from tqdm import tqdm
 import numpy as np
+from PIL import Image
+from tqdm import tqdm
+
+from alt_baselines import make_atari
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate Pong trajectories.')
+    parser = argparse.ArgumentParser(description='Generate Enduro trajectories.')
     parser.add_argument('--datadir', default='data')
-    parser.add_argument('--num_steps', default=1000, type=int)
+    parser.add_argument('--num_steps', default=3000, type=int)
     parser.add_argument('--num_trajectories', default=100, type=int)
     parser.add_argument('--seed', default=4242, type=int)
     args = parser.parse_args()
 
-    # env_name = "PongNoFrameskip-v4"
-    env_name = "CarRacing-v0"
+    env_name = "ALE/Enduro-v5"
 
     num_trajectories = args.num_trajectories
     datadir = args.datadir
@@ -26,8 +25,9 @@ def main():
     np.random.seed(args.seed)
 
     def make_env(env_id, num_steps):
-        env = get_car_env(env_id=env_id, max_episode_steps=num_steps)
-        return WarpFrame(env, 80, 80, grayscale=False)
+        env = make_atari(env_id=env_id, max_episode_steps=num_steps)
+        # env = WarpFrame(env, 80, 80, grayscale=False)
+        return env
 
     env = make_env(env_id=env_name, num_steps=num_steps)
     obs = env.reset()

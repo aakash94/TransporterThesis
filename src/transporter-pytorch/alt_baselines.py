@@ -1,10 +1,9 @@
-import numpy as np
 import os
 
+import numpy as np
+
 os.environ.setdefault('PATH', '')
-from collections import deque
 import gym
-from gym import spaces
 import cv2
 
 cv2.ocl.setUseOpenCL(False)
@@ -141,19 +140,11 @@ class TimeLimit(gym.Wrapper):
         return self.env.reset(**kwargs)
 
 
-def get_car_env(env_id = "CarRacing-v0", max_episode_steps=None):
-    env = gym.make(env_id)
-    # env = NoopResetEnv(env, noop_max=30)
-    if max_episode_steps is not None:
-        env = TimeLimit(env, max_episode_steps=max_episode_steps)
-    return env
-
-
 def make_atari(env_id, max_episode_steps=None):
     env = gym.make(env_id)
-    assert 'NoFrameskip' in env.spec.id
-    env = NoopResetEnv(env, noop_max=30)
-    env = MaxAndSkipEnv(env, skip=4)
+    # assert 'NoFrameskip' in env.spec.id
+    # env = NoopResetEnv(env, noop_max=30)
+    # env = MaxAndSkipEnv(env, skip=4)
     if max_episode_steps is not None:
         env = TimeLimit(env, max_episode_steps=max_episode_steps)
     return env
