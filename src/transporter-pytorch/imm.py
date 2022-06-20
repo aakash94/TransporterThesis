@@ -1,9 +1,12 @@
 import torch
-from torch import nn, optim
+from torch import nn
+
 import data
 from utils import spatial_softmax
 
+
 class PoseRegressor(nn.Module):
+
     # https://papers.nips.cc/paper/7657-unsupervised-learning-of-object-landmarks-through-conditional-image-generation.pdf
 
     def __init__(self, in_channels=3, k=1, num_features=256):
@@ -36,6 +39,7 @@ class PoseRegressor(nn.Module):
 
 
 class Generator(nn.Module):
+
     def __init__(self, in_channels, k_channels, num_features=256):
         super(Generator, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -54,6 +58,7 @@ class Generator(nn.Module):
         x = torch.relu(self.conv1(x))
         x = torch.relu(self.conv2(x))
         return torch.sigmoid(self.conv3(x))
+
 
 def renormalize(heatmaps):
     """
@@ -105,6 +110,7 @@ def gaussian_map(features, std=0.2):
 
 
 class Imm(nn.Module):
+
     def __init__(self, point_net, generator, std=0.2):
         super(Imm, self).__init__()
         self.point_net = point_net
@@ -112,12 +118,12 @@ class Imm(nn.Module):
         self.std = std
 
     def forward(self, source_images, target_images):
-
         phi = self.point_net(target_images)
 
         features = renormalize(spatial_softmax(phi))
         y = gaussian_map(features, std=self.std)
         return self.generator(source_images, y)
+
 
 def main():
     batch_size = 32
@@ -144,12 +150,13 @@ def main():
         optimizer.zero_grad()
         generated = model(xt, xtp1)
         loss = torch.nn.functional.binary_cross_entropy(generated, xtp1)
-        
+
         loss.backward()
         optimizer.step()
         if it % 100 == 0:
             loss_mse = torch.nn.functional.mse_loss(generated, xtp1).detach()
             print(it, loss.item(), loss_mse.item())
+
 
 if __name__ == '__main__':
     main()

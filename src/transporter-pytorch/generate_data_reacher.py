@@ -3,8 +3,6 @@ import json
 import argparse
 
 from PIL import Image
-import baselines
-from baselines.common.atari_wrappers import make_atari, wrap_deepmind, WarpFrame
 from torchvision import transforms
 from tqdm import tqdm
 import numpy as np
@@ -25,11 +23,11 @@ def main():
     datadir = args.datadir
     num_steps = args.num_steps
     np.random.seed(args.seed)
-    
 
     pybullet.connect(pybullet.DIRECT)
 
     class Env(ReacherBulletEnv):
+
         def __init__(self):
             super(Env, self).__init__(render=True)
             self._cam_dist = .5
@@ -39,6 +37,7 @@ def main():
             self._render_height = 320
 
     class SkipFrame(gym.Wrapper):
+
         def step(self, action):
             for _ in range(4):
                 obs, r, done, info = self.env.step(action)
@@ -52,7 +51,6 @@ def main():
         transforms.ToPILImage(),
         transforms.Resize((80, 80)),
     ])
-
 
     with tqdm(total=num_trajectories * num_steps) as pbar:
         for n in range(num_trajectories):

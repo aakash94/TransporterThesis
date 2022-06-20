@@ -10,6 +10,7 @@ cv2.ocl.setUseOpenCL(False)
 
 
 class WarpFrame(gym.ObservationWrapper):
+
     def __init__(self, env, width=84, height=84, grayscale=True, dict_space_key=None):
         """
         Warp frames to 84x84 as done in the Nature paper and later work.
@@ -63,6 +64,7 @@ class WarpFrame(gym.ObservationWrapper):
 
 
 class NoopResetEnv(gym.Wrapper):
+
     def __init__(self, env, noop_max=30):
         """Sample initial states by taking random number of no-ops on reset.
         No-op is assumed to be action 0.
@@ -93,6 +95,7 @@ class NoopResetEnv(gym.Wrapper):
 
 
 class MaxAndSkipEnv(gym.Wrapper):
+
     def __init__(self, env, skip=4):
         """Return only every `skip`-th frame"""
         gym.Wrapper.__init__(self, env)
@@ -122,6 +125,7 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 
 class TimeLimit(gym.Wrapper):
+
     def __init__(self, env, max_episode_steps=None):
         super(TimeLimit, self).__init__(env)
         self._max_episode_steps = max_episode_steps
