@@ -12,7 +12,7 @@ from alt_baselines import make_atari
 def main():
     parser = argparse.ArgumentParser(description='Generate Enduro trajectories.')
     parser.add_argument('--datadir', default='data')
-    parser.add_argument('--num_steps', default=3000, type=int)
+    parser.add_argument('--num_steps', default=1000, type=int)
     parser.add_argument('--num_trajectories', default=100, type=int)
     parser.add_argument('--seed', default=4242, type=int)
     args = parser.parse_args()
