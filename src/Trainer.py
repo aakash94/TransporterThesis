@@ -3,7 +3,7 @@ import gym
 from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 
-from ThesisWrapper import ThesisWrapper
+from ThesisWrapper import ThesisWrapper, WarpFrame
 
 PPO_str = "PPO"
 A2C_str = "A2C"
@@ -27,7 +27,8 @@ class Trainer():
 
         print("Env : ", env_name)
         env = Monitor(env)
-        env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True)
+        #env = WarpFrame(env=env, width=84, height=84, grayscale=False)
+        env = ThesisWrapper(env, history_count=frame_stack_count, motion=False, convert_greyscale=True)
         self.env = env
         logs_root = os.path.join(logs_root, env_name)
 
