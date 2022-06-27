@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from alt_baselines import make_atari
+from alt_baselines import make_atari, WarpFrame
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
 
     def make_env(env_id, num_steps):
         env = make_atari(env_id=env_id, max_episode_steps=num_steps)
-        # env = WarpFrame(env, 80, 80, grayscale=False)
+        env = WarpFrame(env, 80, 80, grayscale=False)
         return env
 
     env = make_env(env_id=env_name, num_steps=num_steps)
