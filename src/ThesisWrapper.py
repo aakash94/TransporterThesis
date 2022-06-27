@@ -1,8 +1,9 @@
+from collections import deque
+
+import cv2
 import gym
 import gym.spaces as spaces
 import numpy as np
-from collections import deque
-import cv2
 
 
 class ThesisWrapper(gym.ObservationWrapper):
@@ -11,7 +12,7 @@ class ThesisWrapper(gym.ObservationWrapper):
                  env: gym.Env,
                  history_count=4,
                  motion=True,
-                 convert_greyscale=False):
+                 convert_greyscale=True):
         super().__init__(env)
         self.history_count = history_count
         self.convert_greyscale = convert_greyscale
@@ -44,28 +45,58 @@ class ThesisWrapper(gym.ObservationWrapper):
         frame = obs
         if self.convert_greyscale:
             frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
-        if self.motion:
-            if self.avg_image == None:
-                # not yet initialized. Initialize this.
-                self.avg_image = frame
-            # compute the running average image.
-            self.avg_image = cv2.addWeighted(self.avg_image, 1.0, frame, 0.6, gamma=0)
         return frame
 
     def operations_on_stack(self):
-        # state = np.concatenate(list(self.frames), axis=2)
-
         if self.motion:
-            state = np.dstack((self.frames[-1], self.avg_image))
+            img_motion = self.get_motion(img_new=self.frames[-1], img_old=self.frames[-2])
+            state = np.dstack((self.frames[-1], img_motion))
         else:
             state = np.dstack(list(self.frames))
         return state
+
+    def get_motion(self, img_new, img_old):
+        flow = cv2.calcOpticalFlowFarneback(prev=img_old,
+                                            next=img_new,
+                                            flow=None,
+                                            pyr_scale=0.5,
+                                            levels=3,
+                                            winsize=15,
+                                            iterations=3,
+                                            poly_n=5,
+                                            poly_sigma=1.2,
+                                            flags=0)
+
+        '''
+        The below code is used to show the flow
+        # https://www.geeksforgeeks.org/python-opencv-dense-optical-flow/
+        mask = np.zeros_like(img_old)
+        mask = np.dstack((mask, mask, mask))
+        # Sets image saturation to maximum
+        mask[..., 1] = 255
+        
+        # Computes the magnitude and angle of the 2D vectors
+        magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+        # Sets image hue according to the optical flow
+        # direction
+        mask[..., 0] = angle * 180 / np.pi / 2
+        # Sets image value according to the optical flow
+        # magnitude (normalized)
+        mask[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
+        # Converts HSV to RGB (BGR) color representation
+        rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
+        # Opens a new window and displays the output frame
+        cv2.imshow("dense optical flow", rgb)
+        cv2.imshow("OG image", img_new)
+        cv2.waitKey(0)
+        '''
+        return flow
 
 
 if __name__ == "__main__":
     env_name = "CarRacing-v1"
     env = gym.make(env_name, continuous=False)
-    env = ThesisWrapper(env=env)
+    env = ThesisWrapper(env=env, motion=True, convert_greyscale=True)
     action = env.action_space.sample()
     observation, reward, done, info = env.step(action)
     print("step shape ", observation.shape)
