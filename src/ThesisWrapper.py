@@ -12,6 +12,7 @@ class ThesisWrapper(gym.ObservationWrapper):
                  env: gym.Env,
                  history_count=4,
                  dump_frames=False,
+                 motion=False,
                  seed=42,
                  convert_greyscale=True):
         super().__init__(env)
@@ -20,6 +21,7 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.history_count = history_count
         self.convert_greyscale = convert_greyscale
         self.dump_frames = dump_frames
+        self.motion = motion
         self.frames_dump_path = os.path.join(".", "frames", "dump")
         self.frames = deque(maxlen=self.history_count)
         state = self.reset()

@@ -9,7 +9,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from ThesisWrapper import ThesisWrapper
 
 
-def get_env(frame_stack_count, atari_env=False, seed=42):
+def get_env(frame_stack_count, atari_env=False, seed=42, motion=False):
     if atari_env:
         env_name = "ALE/Enduro-v5"
         env = gym.make(env_name)
@@ -18,15 +18,15 @@ def get_env(frame_stack_count, atari_env=False, seed=42):
         env = gym.make(env_name, continuous=False)
     print(env_name)
     env = Monitor(env)
-    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed)
+    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed, motion=motion)
     return env
 
 
 class Trainer:
 
-    def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=5):
+    def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False):
         model_name = "saved_model.zip"
-        experiment_folder = "video_ex" + str(frame_stack_count) + ""
+        experiment_folder = "v_try" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
@@ -35,7 +35,7 @@ class Trainer:
         else:
             env_name = "CarRacing-v1"
 
-        env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed)
+        env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed, motion=motion)
         self.eval_env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
 
         # https://github.com/hill-a/stable-baselines/issues/1087
@@ -105,8 +105,10 @@ def main():
     atari_env = False
     total_timesteps = 2000000
     eval_count = 20
+    frame_stack_count = 4
+    motion = False
 
-    t = Trainer(atari_env=atari_env)
+    t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion)
     t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
