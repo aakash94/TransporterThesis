@@ -51,9 +51,48 @@ class ThesisWrapper(gym.ObservationWrapper):
         return frame
 
     def operations_on_stack(self):
-        # state = np.concatenate(list(self.frames), axis=2)
-        state = np.dstack(list(self.frames))
+        if self.motion:
+            img_motion = self.get_motion(img_new=self.frames[-1], img_old=self.frames[-2])
+            state = np.dstack((self.frames[-1], img_motion))
+        else:
+            state = np.dstack(list(self.frames))
         return state
+
+    def get_motion(self, img_new, img_old):
+        flow = cv2.calcOpticalFlowFarneback(prev=img_old,
+                                            next=img_new,
+                                            flow=None,
+                                            pyr_scale=0.5,
+                                            levels=3,
+                                            winsize=15,
+                                            iterations=3,
+                                            poly_n=5,
+                                            poly_sigma=1.2,
+                                            flags=0)
+        '''
+        The below code is used to show the flow
+        # https://www.geeksforgeeks.org/python-opencv-dense-optical-flow/
+        mask = np.zeros_like(img_old)
+        mask = np.dstack((mask, mask, mask))
+        # Sets image saturation to maximum
+        mask[..., 1] = 255
+
+        # Computes the magnitude and angle of the 2D vectors
+        magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+        # Sets image hue according to the optical flow
+        # direction
+        mask[..., 0] = angle * 180 / np.pi / 2
+        # Sets image value according to the optical flow
+        # magnitude (normalized)
+        mask[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
+        # Converts HSV to RGB (BGR) color representation
+        rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
+        # Opens a new window and displays the output frame
+        cv2.imshow("dense optical flow", rgb)
+        cv2.imshow("OG image", img_new)
+        cv2.waitKey(0)
+        '''
+        return flow
 
 
 if __name__ == "__main__":
