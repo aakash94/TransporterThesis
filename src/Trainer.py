@@ -47,7 +47,12 @@ class Trainer:
         logs_root = os.path.join(logs_root, env_name)
 
         print("Model ", model_str)
-        logs_root = os.path.join(logs_root, model_str, "")
+        logs_root = os.path.join(logs_root, model_str)
+
+        if motion:
+            logs_root = os.path.join(logs_root, "mtn", "")
+        else:
+            logs_root = os.path.join(logs_root, "nmtn", "")
 
         self.model = DQN(
             'CnnPolicy',
@@ -107,6 +112,10 @@ def main():
     eval_count = 20
     frame_stack_count = 4
     motion = False
+
+    if motion:
+        # because not more than 2 frames are used.
+        frame_stack_count = 2
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion)
     t.evaluate(n_eval_episodes=eval_count)
