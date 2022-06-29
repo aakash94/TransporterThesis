@@ -21,12 +21,17 @@ def get_env(frame_stack_count, atari_env=False, seed=42, motion=False):
     env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed, motion=motion)
     return env
 
+def write_log(path, string):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'a+') as f:
+        f.write(string)
+        f.write("\n")
 
 class Trainer:
 
     def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False):
         model_name = "saved_model.zip"
-        experiment_folder = "v_try" + str(frame_stack_count) + ""
+        experiment_folder = "v_" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
@@ -36,7 +41,7 @@ class Trainer:
             env_name = "CarRacing-v1"
 
         env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed, motion=motion)
-        self.eval_env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1)
+        self.eval_env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1, motion=motion)
 
         # https://github.com/hill-a/stable-baselines/issues/1087
         # self.eval_callback = EvalCallback(eval_env,best_model_save_path=self.model_save_path,eval_freq=100000,deterministic=True,render=False)
@@ -49,9 +54,12 @@ class Trainer:
         print("Model ", model_str)
         logs_root = os.path.join(logs_root, model_str)
 
+        self.eval_path = ""
         if motion:
+            self.eval_path = os.path.join(logs_root, "mtn", "evals.txt")
             logs_root = os.path.join(logs_root, "mtn", "")
         else:
+            self.eval_path = os.path.join(logs_root, "nmtn", "evals.txt")
             logs_root = os.path.join(logs_root, "nmtn", "")
 
         self.model = DQN(
@@ -101,8 +109,11 @@ class Trainer:
         print("Loaded Model")
 
     def evaluate(self, n_eval_episodes=100):
+        print("Evaluating")
         mean_reward, std_reward = evaluate_policy(self.model, self.eval_env, n_eval_episodes=n_eval_episodes)
-        print("\nMean = ", mean_reward, "\t Std = ", std_reward)
+        result_string = "\nMean = " + str(mean_reward) + "\t Std = " + str(std_reward)
+        print(result_string)
+        write_log(path=self.eval_path, string=result_string)
         print()
 
 
@@ -118,6 +129,7 @@ def main():
         frame_stack_count = 2
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion)
+    print("All Set")
     t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
