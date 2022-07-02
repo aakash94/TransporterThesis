@@ -9,7 +9,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from ThesisWrapper import ThesisWrapper
 
 
-def get_env(frame_stack_count, atari_env=False, seed=42, motion=False):
+def get_env(frame_stack_count, atari_env=False, seed=42, motion=False, transporter=False):
     if atari_env:
         env_name = "ALE/Enduro-v5"
         env = gym.make(env_name)
@@ -18,8 +18,14 @@ def get_env(frame_stack_count, atari_env=False, seed=42, motion=False):
         env = gym.make(env_name, continuous=False)
     print(env_name)
     env = Monitor(env)
-    env = ThesisWrapper(env, history_count=frame_stack_count, convert_greyscale=True, seed=seed, motion=motion)
+    env = ThesisWrapper(env,
+                        history_count=frame_stack_count,
+                        convert_greyscale=True,
+                        seed=seed,
+                        motion=motion,
+                        keypoint=transporter)
     return env
+
 
 def write_log(path, string):
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -27,9 +33,10 @@ def write_log(path, string):
         f.write(string)
         f.write("\n")
 
+
 class Trainer:
 
-    def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False):
+    def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False, transporter=True):
         model_name = "saved_model.zip"
         experiment_folder = "v_" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
@@ -40,8 +47,16 @@ class Trainer:
         else:
             env_name = "CarRacing-v1"
 
-        env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed, motion=motion)
-        self.eval_env = get_env(frame_stack_count=frame_stack_count, atari_env=atari_env, seed=seed + 1, motion=motion)
+        env = get_env(frame_stack_count=frame_stack_count,
+                      atari_env=atari_env,
+                      seed=seed,
+                      motion=motion,
+                      transporter=transporter)
+        self.eval_env = get_env(frame_stack_count=frame_stack_count,
+                                atari_env=atari_env,
+                                seed=seed + 1,
+                                motion=motion,
+                                transporter=transporter)
 
         # https://github.com/hill-a/stable-baselines/issues/1087
         # self.eval_callback = EvalCallback(eval_env,best_model_save_path=self.model_save_path,eval_freq=100000,deterministic=True,render=False)
@@ -55,9 +70,13 @@ class Trainer:
         logs_root = os.path.join(logs_root, model_str)
 
         self.eval_path = ""
+
         if motion:
             self.eval_path = os.path.join(logs_root, "mtn", "evals.txt")
             logs_root = os.path.join(logs_root, "mtn", "")
+        elif transporter:
+            self.eval_path = os.path.join(logs_root, "trnsprtr", "evals.txt")
+            logs_root = os.path.join(logs_root, "trnsprtr", "")
         else:
             self.eval_path = os.path.join(logs_root, "nmtn", "evals.txt")
             logs_root = os.path.join(logs_root, "nmtn", "")
@@ -123,12 +142,13 @@ def main():
     eval_count = 20
     frame_stack_count = 4
     motion = False
+    transporter = True
 
     if motion:
         # because not more than 2 frames are used.
         frame_stack_count = 2
 
-    t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion)
+    t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
     print("All Set")
     t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
