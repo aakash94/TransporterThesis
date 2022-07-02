@@ -1,9 +1,42 @@
+import os
+from collections import deque
+
+import cv2
 import gym
 import gym.spaces as spaces
 import numpy as np
-from collections import deque
-import cv2
-import os
+import torch
+
+import transporter
+
+
+def load_pointnet(model_path=""):
+    np.random.seed(42)
+
+    # Keep these params the same as when trained
+    batch_size = 32
+    image_channels = 3
+    k = 4
+    num_features = 32
+
+    feature_encoder = transporter.FeatureEncoder(image_channels)
+    pose_regressor = transporter.PoseRegressor(image_channels, k)
+    refine_net = transporter.RefineNet(image_channels)
+
+    model = transporter.Transporter(
+        feature_encoder, pose_regressor, refine_net
+    )
+
+    model.load_state_dict(
+        torch.load(model_path, map_location='cpu')
+    )
+    model.eval()
+    pointnet = model.point_net
+    # Pointnet here has the keypoints.
+    # to view feature maps and all, following lines can be used
+    # feature_maps = transporter.spatial_softmax(target_keypoints)
+    # g map = transporter.gaussian_map(feature_maps, std)[idx, k_idx]
+    return pointnet
 
 
 class ThesisWrapper(gym.ObservationWrapper):
