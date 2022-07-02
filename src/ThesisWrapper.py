@@ -46,6 +46,7 @@ class ThesisWrapper(gym.ObservationWrapper):
                  history_count=4,
                  dump_frames=False,
                  motion=False,
+                 keypoint=True,
                  seed=42,
                  convert_greyscale=True):
         super().__init__(env)
@@ -55,6 +56,11 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.convert_greyscale = convert_greyscale
         self.dump_frames = dump_frames
         self.motion = motion
+        self.keypoint = keypoint
+        if self.keypoint:
+            self.motion = False
+        transporter_path = os.path.join(".", "models", "transporters", "model.pth")
+        self.pointnet = load_pointnet(model_path=transporter_path)
         self.frames_dump_path = os.path.join(".", "frames", "dump")
         self.frames = deque(maxlen=self.history_count)
         state = self.reset()
@@ -79,6 +85,9 @@ class ThesisWrapper(gym.ObservationWrapper):
 
     def operation_on_single_frame(self, obs):
         frame = obs
+        if self.keypoint:
+            kps = self.pointnet(obs)
+            return kps
         if self.convert_greyscale:
             frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
         return frame
