@@ -1,12 +1,12 @@
 import os
-import gym
-
 from collections import defaultdict
-from stable_baselines3 import DQN
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.evaluation import evaluate_policy
 
-from ThesisWrapper import ThesisWrapper
+import gym
+from stable_baselines3 import DQN
+from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.monitor import Monitor
+
+from ThesisWrapper import ThesisWrapper, WarpFrame
 
 
 def get_env(frame_stack_count, atari_env=False, seed=42, motion=False, transporter=False):
@@ -18,6 +18,7 @@ def get_env(frame_stack_count, atari_env=False, seed=42, motion=False, transport
         env = gym.make(env_name, continuous=False)
     print(env_name)
     env = Monitor(env)
+    env = WarpFrame(env=env, grayscale=False)
     env = ThesisWrapper(env,
                         history_count=frame_stack_count,
                         convert_greyscale=True,
