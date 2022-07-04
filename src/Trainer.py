@@ -33,13 +33,14 @@ def write_log(path, string):
     with open(path, 'a+') as f:
         f.write(string)
         f.write("\n")
+    print(string)
 
 
 class Trainer:
 
     def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False, transporter=True):
         model_name = "saved_model.zip"
-        experiment_folder = "v_" + str(frame_stack_count) + ""
+        experiment_folder = "W_" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
@@ -139,7 +140,7 @@ class Trainer:
 
 def main():
     atari_env = False
-    total_timesteps = 2000000
+    total_timesteps = 1000000
     eval_count = 20
     frame_stack_count = 4
     motion = False
