@@ -100,7 +100,7 @@ class ThesisWrapper(gym.ObservationWrapper):
                  history_count=4,
                  dump_frames=False,
                  motion=False,
-                 keypoint=True,
+                 keypoint=False,
                  seed=42,
                  convert_greyscale=True):
         super().__init__(env)
@@ -113,7 +113,7 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.keypoint = keypoint
         if self.keypoint:
             self.motion = False
-        transporter_path = os.path.join(".", "models", "transporters", "model.pth")
+        transporter_path = os.path.join(".", "models", "transporters", "model_e.pth")
         self.pointnet = load_pointnet(model_path=transporter_path)
         self.frames_dump_path = os.path.join(".", "frames", "dump")
         self.frames = deque(maxlen=self.history_count)
