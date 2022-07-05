@@ -26,7 +26,6 @@ def main():
 
     def make_env(env_id, num_steps):
         env = get_car_env(env_id=env_id, max_episode_steps=num_steps)
-        # env = WarpFrame(env, 80, 80, grayscale=False)
         return env
 
     env = make_env(env_id=env_name, num_steps=num_steps)
