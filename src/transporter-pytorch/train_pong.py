@@ -102,5 +102,14 @@ def main():
         summary_writer.close()
 
 
+def get_data_loader_wo_config():
+    transform = transforms.ToTensor()
+    dataset = Dataset('data', transform=transform)
+    sampler = Sampler(dataset)
+    loader = torch.utils.data.DataLoader(
+        dataset, batch_size=64, sampler=sampler, pin_memory=True, num_workers=4)
+    return loader
+
+
 if __name__ == "__main__":
     main()
