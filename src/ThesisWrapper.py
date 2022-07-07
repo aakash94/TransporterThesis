@@ -140,10 +140,7 @@ class ThesisWrapper(gym.ObservationWrapper):
 
     def operations_on_stack(self):
         img_avg = self.avg10()
-        cv2.imshow("avg", img_avg)
-        cv2.waitKey(0)
         state = np.dstack((self.frames[-1], img_avg))
-
         return state
 
     def get_motion(self, img_new, img_old):
