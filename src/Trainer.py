@@ -22,9 +22,7 @@ def get_env(frame_stack_count, atari_env=False, seed=42, motion=False, transport
     env = ThesisWrapper(env,
                         history_count=frame_stack_count,
                         convert_greyscale=True,
-                        seed=seed,
-                        motion=motion,
-                        keypoint=transporter)
+                        seed=seed)
     return env
 
 
