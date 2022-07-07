@@ -97,10 +97,7 @@ class ThesisWrapper(gym.ObservationWrapper):
 
     def __init__(self,
                  env: gym.Env,
-                 history_count=4,
-                 dump_frames=False,
-                 motion=False,
-                 keypoint=False,
+                 history_count=10,
                  seed=42,
                  convert_greyscale=True):
         super().__init__(env)
@@ -108,13 +105,11 @@ class ThesisWrapper(gym.ObservationWrapper):
         np.random.seed(self.seed_val)
         self.history_count = history_count
         self.convert_greyscale = convert_greyscale
-        self.dump_frames = dump_frames
-        self.motion = motion
-        self.keypoint = keypoint
+        self.dump_frames = False
+        self.motion = False
+        self.keypoint = False
         if self.keypoint:
             self.motion = False
-        transporter_path = os.path.join(".", "models", "transporters", "model_e.pth")
-        self.pointnet = load_pointnet(model_path=transporter_path)
         self.frames_dump_path = os.path.join(".", "frames", "dump")
         self.frames = deque(maxlen=self.history_count)
         state = self.reset()
@@ -139,19 +134,16 @@ class ThesisWrapper(gym.ObservationWrapper):
 
     def operation_on_single_frame(self, obs):
         frame = obs
-        if self.keypoint:
-            kps = self.pointnet(obs)
-            return kps
         if self.convert_greyscale:
             frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
         return frame
 
     def operations_on_stack(self):
-        if self.motion:
-            img_motion = self.get_motion(img_new=self.frames[-1], img_old=self.frames[-2])
-            state = np.dstack((self.frames[-1], img_motion))
-        else:
-            state = np.dstack(list(self.frames))
+        img_avg = self.avg10()
+        cv2.imshow("avg", img_avg)
+        cv2.waitKey(0)
+        state = np.dstack((self.frames[-1], img_avg))
+
         return state
 
     def get_motion(self, img_new, img_old):
@@ -189,6 +181,18 @@ class ThesisWrapper(gym.ObservationWrapper):
         cv2.waitKey(0)
         '''
         return flow
+
+    def avg10(self):
+        # https://leslietj.github.io/2020/06/28/How-to-Average-Images-Using-OpenCV/
+        avg_image = self.frames[0]
+        for i in range(self.history_count):
+            if i == 0:
+                pass
+            else:
+                alpha = 1.0 / (i + 1)
+                beta = 1.0 - alpha
+                avg_image = cv2.addWeighted(self.frames[i], alpha, avg_image, beta, 0.0)
+        return avg_image
 
 
 if __name__ == "__main__":
