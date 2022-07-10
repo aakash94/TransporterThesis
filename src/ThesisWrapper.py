@@ -111,10 +111,15 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.dump_frames = dump_frames
         self.motion = motion
         self.keypoint = keypoint
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         if self.keypoint:
             self.motion = False
         transporter_path = os.path.join(".", "models", "transporters", "model_e.pth")
-        self.pointnet = load_pointnet(model_path=transporter_path)
+        if self.keypoint:
+            self.pointnet = load_pointnet(model_path=transporter_path)
+            self.pointnet = self.pointnet.to(self.device)  # move to GPU.
+        else:
+            self.pointnet = None
         self.frames_dump_path = os.path.join(".", "frames", "dump")
         self.frames = deque(maxlen=self.history_count)
         state = self.reset()
@@ -140,7 +145,13 @@ class ThesisWrapper(gym.ObservationWrapper):
     def operation_on_single_frame(self, obs):
         frame = obs
         if self.keypoint:
-            kps = self.pointnet(obs)
+            # t_obs = torch.from_numpy(obs)
+            t_obs = torch.from_numpy(obs)
+            t_obs1 = torch.unsqueeze(t_obs, dim=0)
+            t_obs1 = t_obs1.permute(0, 3, 1, 2).float()
+            t_obs2 = t_obs1.to(self.device).detach()
+            kps = self.pointnet(t_obs2).detach()
+            kps = kps.to("cpu")
             return kps
         if self.convert_greyscale:
             frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
@@ -150,6 +161,8 @@ class ThesisWrapper(gym.ObservationWrapper):
         if self.motion:
             img_motion = self.get_motion(img_new=self.frames[-1], img_old=self.frames[-2])
             state = np.dstack((self.frames[-1], img_motion))
+        elif self.keypoint:
+            return self.frames[0]
         else:
             state = np.dstack(list(self.frames))
         return state
