@@ -84,7 +84,7 @@ class Trainer:
             logs_root = os.path.join(logs_root, "nmtn", "")
 
         self.model = DQN(
-            'CnnPolicy',
+            'MlpPolicy',
             self.env,
             tensorboard_log=logs_root,
             buffer_size=50000,
@@ -146,13 +146,9 @@ def main():
     motion = False
     transporter = True
 
-    if motion:
-        # because not more than 2 frames are used.
-        frame_stack_count = 2
-
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
     print("All Set")
-    t.evaluate(n_eval_episodes=eval_count)
+    # t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
     t.evaluate(n_eval_episodes=eval_count)
@@ -160,7 +156,7 @@ def main():
     # t.demonstrate()
     t.load_model()
     # t.demonstrate()
-    t.evaluate(n_eval_episodes=eval_count)
+    # t.evaluate(n_eval_episodes=eval_count)
 
 
 if __name__ == "__main__":
