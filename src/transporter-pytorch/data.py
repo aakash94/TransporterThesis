@@ -1,5 +1,7 @@
 import json
 
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import torch.utils.data
 from PIL import Image
@@ -65,27 +67,67 @@ class Dataset(object):
     def __len__(self):
         raise NotImplementedError
 
+    '''
     def get_image(self, n, t):
         im = np.array(Image.open('{}/{}/{}.png'.format(self._root, n, t)))
         return im
+    '''
 
     def __getitem__(self, idx):
         n, t, tp1 = idx
         imt = np.array(Image.open('{}/{}/{}.png'.format(self._root, n, t)))
         imtp1 = np.array(Image.open('{}/{}/{}.png'.format(self._root, n, tp1)))
+        imt, imtp1 = self.trnsformed_images(imt, imtp1)
         if self._transform is not None:
             imt = self._transform(imt)
             imtp1 = self._transform(imtp1)
-
-        imt, imtp1 = self.trnsformed_images(imt, imtp1)
         return imt, imtp1
 
+    '''
     def get_trajectory(self, idx):
         images = [np.array(Image.open('{}/{}/{}.png'.format(self._root, idx, t))) for t in range(self.num_timesteps)]
         return [self._transform(im) for im in images]
+    '''
 
     def trnsformed_images(self, i1, i2):
+        # motion_i = self.get_motion(img_new=i2, img_old=i1)
         return i1, i2
+
+    def get_motion(self, img_new, img_old):
+        flow = cv2.calcOpticalFlowFarneback(prev=img_old,
+                                            next=img_new,
+                                            flow=None,
+                                            pyr_scale=0.5,
+                                            levels=3,
+                                            winsize=15,
+                                            iterations=3,
+                                            poly_n=5,
+                                            poly_sigma=1.2,
+                                            flags=0)
+        '''
+        The below code is used to show the flow
+        # https://www.geeksforgeeks.org/python-opencv-dense-optical-flow/
+        mask = np.zeros_like(img_old)
+        mask = np.dstack((mask, mask, mask))
+        # Sets image saturation to maximum
+        mask[..., 1] = 255
+
+        # Computes the magnitude and angle of the 2D vectors
+        magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+        # Sets image hue according to the optical flow
+        # direction
+        mask[..., 0] = angle * 180 / np.pi / 2
+        # Sets image value according to the optical flow
+        # magnitude (normalized)
+        mask[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
+        # Converts HSV to RGB (BGR) color representation
+        rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
+        # Opens a new window and displays the output frame
+        cv2.imshow("dense optical flow", rgb)
+        cv2.imshow("OG image", img_new)
+        cv2.waitKey(0)
+        '''
+        return flow
 
 
 class Sampler(torch.utils.data.Sampler):
