@@ -3,15 +3,24 @@ import json
 import os
 
 import numpy as np
+import torch
 from PIL import Image
 from tqdm import tqdm
-
+from stable_baselines3 import DQN
 from alt_baselines import get_car_env
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+def load_model():
+    print("Loading Model")
+    model = DQN.load(path="./../models/WTF_1/generator_cr.zip", device=device)
+    print("Loaded Model")
+    return model
 
 def main():
     parser = argparse.ArgumentParser(description='Generate Pong trajectories.')
-    parser.add_argument('--datadir', default='data')
+    parser.add_argument('--datadir', default='data2')
     parser.add_argument('--num_steps', default=1000, type=int)
     parser.add_argument('--num_trajectories', default=100, type=int)
     parser.add_argument('--seed', default=4242, type=int)
@@ -30,6 +39,7 @@ def main():
 
     env = make_env(env_id=env_name, num_steps=num_steps)
     obs = env.reset()
+    model = load_model()
     print("Data will be saved to {}".format(datadir))
     with tqdm(total=num_trajectories * num_steps) as pbar:
         for n in range(num_trajectories):
@@ -39,7 +49,12 @@ def main():
             Image.fromarray(obs).save('{}/{}/{}.png'.format(datadir, n, t))
             images = []
             while True:
-                action = env.action_space.sample()
+                # action = env.action_space.sample()
+                # obs = torch.from_numpy(obs).to(device)
+                # obs = torch.from_numpy(obs)#.to(device)
+                # obs = obs.permute(2, 0, 1)
+                obs = np.moveaxis(obs, -1, 0)
+                action, _states = model.predict(obs, deterministic=True)
                 obs, r, done, _ = env.step(action)
                 Image.fromarray(obs).save('{}/{}/{}.png'.format(datadir, n, t))
                 images.append(obs)
