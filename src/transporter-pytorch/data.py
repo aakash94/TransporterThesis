@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import torch.utils.data
+import matplotlib.pyplot as plt
 from PIL import Image
 
 
