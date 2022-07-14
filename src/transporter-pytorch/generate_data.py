@@ -39,7 +39,8 @@ def main():
             Image.fromarray(obs).save('{}/{}/{}.png'.format(datadir, n, t))
             images = []
             while True:
-                obs, r, done, _ = env.step(env.action_space.sample())
+                action = env.action_space.sample()
+                obs, r, done, _ = env.step(action)
                 Image.fromarray(obs).save('{}/{}/{}.png'.format(datadir, n, t))
                 images.append(obs)
                 t += 1
