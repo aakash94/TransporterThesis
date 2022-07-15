@@ -31,6 +31,23 @@ def apply_flow(flow: np.ndarray, prev_i: np.ndarray, next_i: np.ndarray):
                 [get_index(v=x, fv=flow_val[0], max_v=x_val)]
     return final_i
 
+def apply_flow2(flow: np.ndarray, prev_i: np.ndarray):
+    # https://pyimagesearch.com/2021/02/03/opencv-image-translation/
+    avg_motion = np.mean(flow, axis=(0, 1))
+    affine_mat = np.float32([
+        [1, 0, avg_motion[0]],
+        [0, 1, avg_motion[1]]
+    ])
+    final_i = cv2.warpAffine(prev_i, affine_mat, (prev_i.shape[1], prev_i.shape[0]))
+    # print("motion avg", avg_motion)
+    # for y in range(y_val):
+    #     for x in range(x_val):
+    #         flow_val = flow[y][x]
+    #         final_i[y][x] = next_i[get_index(v=y, fv=flow_val[1], max_v=y_val)] \
+    #             [get_index(v=x, fv=flow_val[0], max_v=x_val)]
+    return final_i
+
+
 
 def trnsformed_images(i1, i2):
     if not isinstance(i1, np.ndarray):
@@ -49,6 +66,9 @@ def trnsformed_images(i1, i2):
     # v1 = motion_i[:, :, 1]
     # print("m", motion_i)
     # apply flow to i1
+    r = Image.fromarray(reconstruct)
+    print("reconstructed")
+    r.show(title="r")
 
     return reconstruct, i2
 
@@ -89,6 +109,9 @@ def get_motion(img_new, img_old):
     '''
     return flow
 
+def show_nd_array(m:np.ndarray):
+    m = Image.fromarray(m)
+    m.show()
 
 def main():
     print("ARGH!")
@@ -100,10 +123,12 @@ def main():
     ni1 = Image.fromarray(ni1)
     ni2 = Image.fromarray(ni2)
     i1 = Image.fromarray(i1)
+    i2 = Image.fromarray(i2)
     print("reconstructed")
-    i1.show()
-    ni1.show()
-    ni2.show()
+    #i1.show(title="i1")
+    i2.show(title="i2")
+    # ni1.show(title="ni1")
+    # ni2.show(title="ni1")
 
 
 if __name__ == "__main__":
