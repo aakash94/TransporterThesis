@@ -19,8 +19,8 @@ def get_config():
     config.dataset_root = 'data'
     config.batch_size = 64
     config.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    config.image_channels = 3
-    config.k = 4
+    config.image_channels = 1  # Flow construction makes things grayscale
+    config.k = 3  # Keeping Image like so that CnnPolicy can be used.
     config.num_iterations = int(1e6)
     config.learning_rate = 1e-3
     config.learning_rate_decay_rate = 0.95
