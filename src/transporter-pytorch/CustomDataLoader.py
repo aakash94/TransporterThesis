@@ -8,11 +8,28 @@ transform = transforms.ToTensor()
 
 def get_image(n, t):
     im = Image.open('{}/{}/{}.png'.format("data", n, t))
-    # im.show()
+    im.show()
     im = np.array(im)
     # im = transform(im)
     return im
 
+
+def get_index(v, fv, max_v=84):
+    i = int(v + fv)
+    i = max(0, min(i, max_v - 1))
+    return i
+
+
+def apply_flow(flow: np.ndarray, prev_i: np.ndarray, next_i: np.ndarray):
+    # https://docs.opencv.org/3.4/dc/d6b/group__video__track.html#ga5d10ebbd59fe09c5f650289ec0ece5af
+    y_val, x_val = prev_i.shape
+    final_i = np.zeros_like(prev_i)
+    for y in range(y_val):
+        for x in range(x_val):
+            flow_val = flow[y][x]
+            final_i[y][x] = next_i[get_index(v=y, fv=flow_val[1], max_v=y_val)] \
+                [get_index(v=x, fv=flow_val[0], max_v=x_val)]
+    return final_i
 
 
 def trnsformed_images(i1, i2):
@@ -25,14 +42,15 @@ def trnsformed_images(i1, i2):
     i1 = cv2.cvtColor(i1, cv2.COLOR_RGB2GRAY)
     i2 = cv2.cvtColor(i2, cv2.COLOR_RGB2GRAY)
     motion_i = get_motion(img_new=i2, img_old=i1)
-    print("i1", i1[0])
-    print("i2", i2[0])
-    v0 = motion_i[:,:, 0]
-    v1 = motion_i[:,:, 1]
-    print("m", motion_i)
+    reconstruct = apply_flow(flow=motion_i, prev_i=i1, next_i=i2)
+    # print("i1", i1[0])
+    # print("i2", i2[0])
+    # v0 = motion_i[:, :, 0]
+    # v1 = motion_i[:, :, 1]
+    # print("m", motion_i)
     # apply flow to i1
 
-    return i1, i2
+    return reconstruct, i2
 
 
 def get_motion(img_new, img_old):
@@ -75,9 +93,12 @@ def get_motion(img_new, img_old):
 def main():
     print("ARGH!")
     n = 3
-    i1 = get_image(n=3, t=100)
-    i2 = get_image(n=3, t=950)
+    i1 = get_image(n=3, t=300)
+    i2 = get_image(n=3, t=690)
     ni1, ni2 = trnsformed_images(i1, i2)
+    ni1 = Image.fromarray(ni1)
+    print("reconstructed")
+    ni1.show()
 
 
 if __name__ == "__main__":

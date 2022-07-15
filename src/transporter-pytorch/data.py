@@ -90,8 +90,17 @@ class Dataset(object):
     '''
 
     def trnsformed_images(self, i1, i2):
-        # motion_i = self.get_motion(img_new=i2, img_old=i1)
-        return i1, i2
+        if not isinstance(i1, np.ndarray):
+            i1 = np.array(i1)
+
+        if not isinstance(i2, np.ndarray):
+            i2 = np.array(i2)
+
+        i1 = cv2.cvtColor(i1, cv2.COLOR_RGB2GRAY)
+        i2 = cv2.cvtColor(i2, cv2.COLOR_RGB2GRAY)
+        motion_i = self.get_motion(img_new=i2, img_old=i1)
+        reconstruct = self.apply_flow(flow=motion_i, prev_i=i1, next_i=i2)
+        return reconstruct, i2
 
     def get_motion(self, img_new, img_old):
         flow = cv2.calcOpticalFlowFarneback(prev=img_old,
@@ -128,6 +137,22 @@ class Dataset(object):
         cv2.waitKey(0)
         '''
         return flow
+
+    def get_index(self, v, fv, max_v=84):
+        i = int(v + fv)
+        i = max(0, min(i, max_v - 1))
+        return i
+
+    def apply_flow(self, flow: np.ndarray, prev_i: np.ndarray, next_i: np.ndarray):
+        # https://docs.opencv.org/3.4/dc/d6b/group__video__track.html#ga5d10ebbd59fe09c5f650289ec0ece5af
+        y_val, x_val = prev_i.shape
+        final_i = np.zeros_like(prev_i)
+        for y in range(y_val):
+            for x in range(x_val):
+                flow_val = flow[y][x]
+                final_i[y][x] = next_i[self.get_index(v=y, fv=flow_val[1], max_v=y_val)] \
+                    [self.get_index(v=x, fv=flow_val[0], max_v=x_val)]
+        return final_i
 
 
 class Sampler(torch.utils.data.Sampler):
