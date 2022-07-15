@@ -16,7 +16,7 @@ def load_pointnet(model_path=""):
     # Keep these params the same as when trained
     batch_size = 32
     image_channels = 3
-    k = 4
+    k = 3
     num_features = 32
 
     feature_encoder = transporter.FeatureEncoder(image_channels)
@@ -114,7 +114,7 @@ class ThesisWrapper(gym.ObservationWrapper):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         if self.keypoint:
             self.motion = False
-        transporter_path = os.path.join(".", "models", "transporters", "model_e.pth")
+        transporter_path = os.path.join(".", "models", "transporters", "model3_c.pth")
         if self.keypoint:
             self.pointnet = load_pointnet(model_path=transporter_path)
             self.pointnet = self.pointnet.to(self.device)  # move to GPU.
@@ -151,7 +151,10 @@ class ThesisWrapper(gym.ObservationWrapper):
             t_obs1 = t_obs1.permute(0, 3, 1, 2).float()
             t_obs2 = t_obs1.to(self.device).detach()
             kps = self.pointnet(t_obs2).detach()
+            kps = torch.squeeze(kps)
             kps = kps.to("cpu")
+            kps = kps.numpy()
+            # print(type(kps))
             return kps
         if self.convert_greyscale:
             frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
