@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-
+import torch
 import gym
 from stable_baselines3 import DQN
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -39,8 +39,9 @@ def write_log(path, string):
 class Trainer:
 
     def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False, transporter=True):
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model_name = "saved_model.zip"
-        experiment_folder = "W_" + str(frame_stack_count) + ""
+        experiment_folder = "Test_" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
@@ -84,9 +85,10 @@ class Trainer:
             logs_root = os.path.join(logs_root, "nmtn", "")
 
         self.model = DQN(
-            'MlpPolicy',
+            'CnnPolicy',
             self.env,
             tensorboard_log=logs_root,
+            device=self.device,
             buffer_size=50000,
             verbose=verbose,
             seed=seed)
@@ -141,10 +143,10 @@ class Trainer:
 def main():
     atari_env = False
     total_timesteps = 1000000
-    eval_count = 20
-    frame_stack_count = 4
+    eval_count = 10
+    frame_stack_count = 1
     motion = False
-    transporter = True
+    transporter = False
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
     print("All Set")
