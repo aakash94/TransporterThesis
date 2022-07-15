@@ -8,7 +8,7 @@ transform = transforms.ToTensor()
 
 def get_image(n, t):
     im = Image.open('{}/{}/{}.png'.format("data", n, t))
-    im.show()
+    # im.show()
     im = np.array(im)
     # im = transform(im)
     return im
@@ -96,9 +96,14 @@ def main():
     i1 = get_image(n=3, t=300)
     i2 = get_image(n=3, t=690)
     ni1, ni2 = trnsformed_images(i1, i2)
+
     ni1 = Image.fromarray(ni1)
+    ni2 = Image.fromarray(ni2)
+    i1 = Image.fromarray(i1)
     print("reconstructed")
+    i1.show()
     ni1.show()
+    ni2.show()
 
 
 if __name__ == "__main__":
