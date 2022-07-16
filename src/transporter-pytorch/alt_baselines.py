@@ -146,7 +146,7 @@ class TimeLimit(gym.Wrapper):
 
 def get_car_env(env_id="CarRacing-v0", max_episode_steps=None):
     env = gym.make(env_id, continuous=False)
-    env = WarpFrame(env, 84, 84, grayscale=False)
+    env = WarpFrame(env, 84, 84, grayscale=True)
     if max_episode_steps is not None:
         env = TimeLimit(env, max_episode_steps=max_episode_steps)
     return env
