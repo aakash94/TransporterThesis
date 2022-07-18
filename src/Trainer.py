@@ -18,10 +18,10 @@ def get_env(frame_stack_count, atari_env=False, seed=42, motion=False, transport
         env = gym.make(env_name, continuous=False)
     print(env_name)
     env = Monitor(env)
-    env = WarpFrame(env=env, grayscale=False)
+    env = WarpFrame(env=env, grayscale=True)
     env = ThesisWrapper(env,
                         history_count=frame_stack_count,
-                        convert_greyscale=True,
+                        convert_greyscale=False,
                         seed=seed,
                         motion=motion,
                         keypoint=transporter)
@@ -41,7 +41,7 @@ class Trainer:
     def __init__(self, atari_env=False, seed=42, verbose=0, frame_stack_count=4, motion=False, transporter=True):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model_name = "saved_model.zip"
-        experiment_folder = "Test_" + str(frame_stack_count) + ""
+        experiment_folder = "C_84_mlp_" + str(frame_stack_count) + ""
         logs_root = os.path.join(".", "logs", experiment_folder)
         self.model_save_path = os.path.join(".", "models", experiment_folder, model_name)
         model_str = "DQN"
@@ -85,7 +85,7 @@ class Trainer:
             logs_root = os.path.join(logs_root, "nmtn", "")
 
         self.model = DQN(
-            'CnnPolicy',
+            'MlpPolicy',
             self.env,
             tensorboard_log=logs_root,
             device=self.device,
@@ -143,22 +143,22 @@ class Trainer:
 def main():
     atari_env = False
     total_timesteps = 1000000
-    eval_count = 10
+    eval_count = 100
     frame_stack_count = 1
     motion = False
-    transporter = False
+    transporter = True
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
     print("All Set")
     # t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
     print("Done Training")
-    t.evaluate(n_eval_episodes=eval_count)
+    # t.evaluate(n_eval_episodes=eval_count)
     t.save_model()
     # t.demonstrate()
     t.load_model()
     # t.demonstrate()
-    # t.evaluate(n_eval_episodes=eval_count)
+    t.evaluate(n_eval_episodes=eval_count)
 
 
 if __name__ == "__main__":

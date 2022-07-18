@@ -25,7 +25,7 @@ def main():
         frame_stack_count = 2
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
-    write_log(path=t.eval_path, string="mlp_1_80")
+    write_log(path=t.eval_path, string="mlp_1_84")
     print("All Set")
     # t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
@@ -42,7 +42,7 @@ def main():
         frame_stack_count = 2
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
-    write_log(path=t.eval_path, string="mlp_4_80")
+    write_log(path=t.eval_path, string="mlp_4_84")
     print("All Set")
     # t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
@@ -59,7 +59,7 @@ def main():
         frame_stack_count = 2
 
     t = Trainer(atari_env=atari_env, frame_stack_count=frame_stack_count, motion=motion, transporter=transporter)
-    write_log(path=t.eval_path, string="mlp_Motion_80")
+    write_log(path=t.eval_path, string="mlp_Motion_84")
     print("All Set")
     # t.evaluate(n_eval_episodes=eval_count)
     t.train(total_timesteps=total_timesteps)
